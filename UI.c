@@ -3,6 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <stdbool.h>
+#include "sprite.c"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -23,51 +25,106 @@ void resize_console(int cols, int rows)
 #endif
 
 bool isDebug = true;
+int debugPosition = 1;
+WINDOW * lastKeypad;
 
-const char* backgroundA =
-"│     │  │ ││  |  `._|     | `'--.--'´ |     |_.´  |   :|  | .´ |  | │"
-"│--.- │  │ ││:,|   | `'-,._|     |     |_.,-'´ |   |,:´ |  :´|  |  | │"
-"│  |  │  │,││|  `. |    |   `':--'--:'´   |    | .´  |  |.|  |  |  | │"
-"│  |  │  │∞││|   |`'-.,_|     |     |     |_,.-'´|   |.:´ |  |  |  :.│"
-"│--'- │  │(││',  |   |   `':--'--.--'--:'´   |   |  ,' |  |  |  !.´ |│"
-"│     │  │)││  |´'-.,|     |     |     |     |,.-'`|   |  | ,'¡´ |  |│"
-"│     │  │ ││  |   |   `¡·-'--.--'--.--'-·¡'´  |   |   |_.'|  |  |  |│"
-"│--.- │  !│││¡·!_  |    |     |     |     |    |  _!·¡'´|  |  |  |  |│"
-"│  |  │    '│|   |¯ `'¡''·-.--'--.--'--.-·''¡'´ ¯|   |  |  |  |  |  |│"
-"│  |  │     │|   |    |    |     |     |    |    |   |  |  |  |  |  |│"
-"│--'- │     │'-.-'-.--'-.--'--┬--'--┬--'--.-'--.-'-.-'-.'-.'-.'-.'-.'│"
-"│     │     │  |   |    |     |     |     |    |   |   |  |  |  |  | │"
-"│     │     │  |  _|,...·--.--'--.--'--.--·...,|_  |   |  |  |  |  | │"
-"│--.- │     │:'´¯|    |    |     '     |    |    |¯`':-:._!  |  |  | │"
-"│  |  │     │|   |  _.!,..-'--.--'--.--'-..,!._  |   |  |  |`'-.|  | │"
-"│  |  │     │!.:'´¯|    |   __! _ _ !__   |    |¯`':.!_ |  |  | `:.| │"
-"│--'┌─┴─────┴─┐|  _!.--' ´¯   \\       .´ ¯`'--.!_  |   |`'.|  |  |  ¡│"
-"│   └╥┬──┬──┬┬┘'´    `'-._     \\    .´        __.-`'-._|  |`. |  |  |│"
-"│·┌──╨┴──┴──┴┴──┐___      `'-.\".·- -·.\"_  .-'´         `-.|  |!  |  |│"
-"│ └─────────────┘    ¯¯`' .:¡|'| ' | '| ¡:.               `, | `.|  |│"
-"│¯¯¯¯¯¯\\¯¯¯¯¯¯\\¯¯¯¯¯¯\\¯¯.||||  |     | ||'||.¯¯ ¯¯¯ ¯¯¯ ¯¯ ¯`!  |`. |│"
-"│¯¯¯\\¯¯¯¯¯¯\\¯¯¯¯¯¯\\¯¯¯¯¯||| | ||  |     |  ||                 · |  ¡:│"
-"│\\¯¯¯¯¯¯¯¯¯¯¯¯¯\\¯¯¯¯¯¯¯¯\\|  |  '          ||/'¯¯ ¯¯¯ ¯¯ ¯¯¯ ¯¯ `·  | │"
-"│_\\_____________\\________`,             | ,'                     ` | │"
-"│_____\\______\\______\\____/  `-, _    _.-´¯\\_.-|\\¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\\ │"
-"│__\\______\\______\\______\\______\\ ¯¯¯¯ \\_____\\_\\ \\|\\¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯│"
-"│      \\      \\      \\      \\   ¯¯¯\\¯¯    \\    \\   \\|\\¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯│"
-"│`-────-`-────-`-────-`-────-`-────-`-────-`-───\\     \\|\\¯¯¯¯¯¯¯¯¯¯¯¯│"
-;
+WINDOW *debugHud, *playerhud, *mainScreen, *commandHud, *textHud, *debugMessageHud;
 
-WINDOW * debugHud, * playerhud, * mainScreen, * commandHud, * textHud;
-
-WINDOW * debugMenu()
+int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx);
+void debugMenuInput(int usrInput);
+WINDOW *debugMenu();
+void draw_all();
+void handle_resize(int sig);
+int exitMenu();
+void debugMenuInput(int usrInput)
 {
-  if (isDebug){
-    debugHud = newwin(37, 20, 0, 102);
-    box(debugHud, 0, 0);
-    mvwprintw(debugHud, 0, 1, "Debug");
+    if (!isDebug || !debugHud) return;
+
+    mvwprintw(debugHud, debugPosition, 1, "                  ");
+    switch (usrInput)
+    {
+        case 10:
+            mvwprintw(debugHud, debugPosition, 1, "Enter");
+            break;
+        default:
+            mvwprintw(debugHud, debugPosition, 1, "%c (%d)", (char)usrInput, usrInput);
+            break;
+    }
+
+    debugPosition++;
+    if (debugPosition >= 11)
+    {
+      debugPosition = 2;
+      delwin(debugHud);
+      debugMenu();
+      mvwprintw(debugHud, 1, 1, "%c (%d)", (char)usrInput, usrInput);
+    }
     wrefresh(debugHud);
-    return debugHud;
-  }
 }
 
+WINDOW *debugMenu()
+{
+  if (!isDebug) return NULL;
+  debugMessageHud = newwin(26, 20, 0 , 102);
+  box(debugMessageHud, 0, 0);
+  mvwprintw(debugMessageHud, 0, 1, "Debug Messages");
+  wrefresh(debugMessageHud);
+  debugHud = newwin(11, 20, 26, 102);
+  box(debugHud, 0, 0);
+  mvwprintw(debugHud, 0, 1, "Debug Input");
+  wrefresh(debugHud);
+}
+
+int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx)
+{
+    int highlight = 0;
+    int arraySize = 0;
+    while (strChoices[arraySize] != NULL)
+        arraySize++;
+
+    while (1)
+    {
+        flushinp();
+        for (int i = 0; i < arraySize; i++)
+        {
+            if (i == highlight)
+                wattron(win, A_REVERSE);
+            mvwprintw(win, i + starty, startx, "%s", strChoices[i]);
+            wattroff(win, A_REVERSE);
+        }
+
+        int usrInput = wgetch(win);
+
+        switch (usrInput)
+        {
+            case KEY_UP:
+                highlight--;
+                if (highlight < 0) highlight = 0;
+                break;
+            case KEY_DOWN:
+                highlight++;
+                if (highlight >= arraySize) highlight = arraySize - 1;
+                break;
+            case 10: // Enter
+                flushinp();
+                return highlight;
+            case 27: // ESC
+                lastKeypad = win;
+                int exitChoices = exitMenu();
+                flushinp();
+                if (exitChoices == 1) return -1;
+                break;
+            default:
+                break;
+        }
+
+        flushinp();
+        debugMenuInput(usrInput);
+        wrefresh(win);
+    }
+}
+
+// Beta dynamic UI vs Sigma static UI
 void draw_all()
 {
     clear();
@@ -102,10 +159,72 @@ void draw_all()
     box(textHud, 0, 0);
     mvwprintw(textHud, 0, 1, "Text");
     wrefresh(textHud);
-
-    debugMenu();
 }
 
+int exitMenu()
+{
+    // Disable keypad for main window to avoid conflict
+    keypad(lastKeypad, FALSE);
+
+    // Create new popup window
+    WINDOW *exitHud = newwin(7, 50, 15, 25);
+    box(exitHud, 0, 0);
+    mvwprintw(exitHud, 0, 22, "Exit");
+    mvwprintw(exitHud, 2, 7, "Apakah kamu yakin ingin keluar game?");
+    wrefresh(exitHud);
+
+    keypad(exitHud, TRUE);
+
+    char *strChoices[] = {"Tidak", "Ya"};
+    int highlight = 0;
+
+    while (1)
+    {
+        flushinp();
+        // Draw choices centered at bottom
+        for (int i = 0; i < 2; i++)
+        {
+            int x = 19 + (i * 6);
+            int y = 4;
+            if (i == highlight) wattron(exitHud, A_REVERSE);
+            mvwprintw(exitHud, y, x, "%s", strChoices[i]);
+            if (i == highlight) wattroff(exitHud, A_REVERSE);
+        }
+
+        wrefresh(exitHud);
+
+        int usrInput = wgetch(exitHud);
+
+        switch (usrInput)
+        {
+        case KEY_LEFT:
+            highlight--;
+            if (highlight < 0)
+                highlight = 0;
+            break;
+        case KEY_RIGHT: // You used KEY_DOWN by mistake
+            highlight++;
+            if (highlight > 1)
+                highlight = 1;
+            break;
+        case 10: // Enter key
+            delwin(exitHud);
+            flushinp();
+            keypad(lastKeypad, TRUE);
+            draw_all();
+            debugMenu();
+            return highlight; // 0 = No, 1 = Yes
+        case 27: // ESC
+            delwin(exitHud);
+            keypad(lastKeypad, TRUE);
+            draw_all();
+            debugMenu();
+            return 0; // treat ESC as "No"
+        default:
+            break;
+        }
+    }
+}
 void handle_resize(int sig)
 {
     endwin();
@@ -115,84 +234,31 @@ void handle_resize(int sig)
     draw_all();
 }
 
-int main()
+int main(void)
 {
     setlocale(LC_ALL, "");
     initscr();
-    ESCDELAY = 25;
+    set_escdelay(25);
     noecho();
     curs_set(0);
     cbreak();
     keypad(stdscr, TRUE);
     refresh();
+    raw();
 
     signal(SIGWINCH, handle_resize);
     draw_all();
 
-    char *menuChoices[] = {"Explore","Shop","Exit"};
-    debugHud = debugMenu();
+    char *menuChoices[] = {"Explore", "Shop", "Save", "Load", NULL};
+    keypad(commandHud, TRUE);
 
-
-    commandHud = newwin(22, 30, 15, 0);
-    box(commandHud, 0, 0);
-    mvwprintw(commandHud, 0, 1, "Command");
-    wrefresh(commandHud);
-
-    keypad(commandHud, true);
-    int debugPosition = 1;
-    int highlight = 0;
+    debugMenu();
     while (1)
     {
-        for (int i = 0; i < 3; i++)
-        {
-          if (i == highlight) {wattron(commandHud, A_REVERSE);}
-          mvwprintw(commandHud, i+2, 1, menuChoices[i]);
-          wattroff(commandHud, A_REVERSE);
-        }
-        int usrInput = wgetch(commandHud);
-        if (debugPosition >= 36)
-            debugPosition = 1;
-
-        switch (usrInput)
-        {
-          case KEY_UP:
-            highlight--;
-            if(highlight == -1)
-            {
-              highlight = 0;
-            }
-            break;
-          case KEY_DOWN:
-            highlight++;
-            if(highlight == 3)
-            {
-              highlight = 2;
-            }
-            break;
-          case 27:
-            return 1;
-          default:
-            break;
-        }
-
-        mvwprintw(debugHud, debugPosition, 1, "                  ");
-        switch (usrInput)
-        {
-            case 10:
-                mvwprintw(debugHud, debugPosition, 1, "Enter");
-                break;
-            default:
-                mvwprintw(debugHud, debugPosition, 1, "Input: %c (%d)", (char)usrInput, usrInput);
-                break;
-        }
-        debugPosition++;
-        box(debugHud, 0, 0);
-        mvwprintw(debugHud, 0, 1, "Debug");
-        wrefresh(debugHud);
-        wrefresh(commandHud);
+        int choice = usrInputChoices(menuChoices, commandHud, 1, 1);
+        if (choice == -1) break; // ESC pressed
     }
 
     endwin();
     return 0;
 }
-
