@@ -1,96 +1,119 @@
-#include <ncurses.h>
 #include <stdlib.h>
 #include <time.h>
 
-#define HEIGHT 20
-#define WIDTH 40
+int onGrass = 0;
 
-void onGrass(WINDOW *win) {
-    mvwprintw(win, HEIGHT - 1, 2, "You’re walking on grass...   ");
-    wrefresh(win);
+void onGrassEvent(WINDOW *game)
+{
+    mvwprintw(game, 0, 2, "[You step on grass]");
+    wrefresh(game);
+    napms(150);
 }
 
-// Generate a random map with square grass patches
-void generateMap(char map[HEIGHT - 2][WIDTH - 2]) {
-    // Fill map with '.'
-    for (int y = 0; y < HEIGHT - 2; y++) {
-        for (int x = 0; x < WIDTH - 2; x++) {
-            map[y][x] = '.';
-        }
-    }
+void generateMap(char **map, int h, int w)
+{
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++)
+            map[y][x] = (rand() % 5 == 0) ? 'W' : '.'; // grass (W) or dirt
 
-    int clusters = 6 + rand() % 5; // 6–10 grass patches
-
-    for (int c = 0; c < clusters; c++) {
-        int gx = rand() % (WIDTH - 6);  // left corner
-        int gy = rand() % (HEIGHT - 6); // top corner
-
-        int w = 2 + rand() % 4; // width 2–5
-        int h = 2 + rand() % 4; // height 2–5
-
-        // Fill rectangular patch
-        for (int y = gy; y < gy + h && y < HEIGHT - 2; y++) {
-            for (int x = gx; x < gx + w && x < WIDTH - 2; x++) {
-                map[y][x] = 'W';
-            }
-        }
+    // create some random water patches for variety
+    for (int c = 0; c < 5; c++)
+    {
+        int gx = rand() % (w - 5);
+        int gy = rand() % (h - 5);
+        for (int y = gy; y < gy + 3; y++)
+            for (int x = gx; x < gx + 3; x++)
+                map[y][x] = '~';
     }
 }
 
-int main() {
-    srand(time(NULL));
-    initscr();
-    noecho();
-    cbreak();
-    curs_set(0);
-
-    int start_y = 1, start_x = 3;
-    WINDOW *game = newwin(HEIGHT, WIDTH, start_y, start_x);
+int overworldStart(WINDOW *game)
+{
+    int boxHeight, boxWidth;
+    getmaxyx(game, boxHeight, boxWidth);
     keypad(game, TRUE);
+    nodelay(game, FALSE);
+    srand(time(NULL));
 
-    char map[HEIGHT - 2][WIDTH - 2];
-    generateMap(map);
+    // Allocate map memory
+    char **map = malloc((boxHeight - 2) * sizeof(char *));
+    for (int i = 0; i < boxHeight - 2; i++)
+        map[i] = malloc((boxWidth - 2) * sizeof(char));
 
-    // Draw initial map
+    generateMap(map, boxHeight - 2, boxWidth - 2);
+
+    // Draw border box
     box(game, 0, 0);
-    for (int y = 0; y < HEIGHT - 2; y++) {
-        for (int x = 0; x < WIDTH - 2; x++) {
-            mvwaddch(game, y + 1, x + 1, map[y][x]);
-        }
-    }
 
-    // Player start position
-    int px = WIDTH / 2, py = HEIGHT / 2;
+    // Draw map content
+    for (int y = 0; y < boxHeight - 2; y++)
+        for (int x = 0; x < boxWidth - 2; x++)
+            mvwaddch(game, y + 1, x + 1, map[y][x]);
+
+    // Draw the exit banner (inside the box)
+    for (int x = 1; x < boxWidth - 1; x++)
+        mvwaddch(game, 1, x, '-');
+    mvwprintw(game, 1, (boxWidth / 2) - 5, "---EXIT---");
+
+    // Player position
+    int px = boxWidth / 2;
+    int py = boxHeight / 2;
     mvwaddch(game, py, px, '@');
     wrefresh(game);
 
     int ch;
-    while ((ch = wgetch(game)) != 'q') {
+    while (1)
+    {
+        ch = wgetch(game);
+
         // Restore old tile
         mvwaddch(game, py, px, map[py - 1][px - 1]);
 
-        // Move player
-        switch (ch) {
-            case KEY_UP:    if (py > 1) py--; break;
-            case KEY_DOWN:  if (py < HEIGHT - 2) py++; break;
-            case KEY_LEFT:  if (px > 1) px--; break;
-            case KEY_RIGHT: if (px < WIDTH - 2) px++; break;
+        switch (ch)
+        {
+        case KEY_UP:
+            if (py > 1)
+                py--;
+            break;
+        case KEY_DOWN:
+            if (py < boxHeight - 2)
+                py++;
+            break;
+        case KEY_LEFT:
+            if (px > 1)
+                px--;
+            break;
+        case KEY_RIGHT:
+            if (px < boxWidth - 2)
+                px++;
+            break;
+        case 'q':
+            goto exit_overworld;
+        default:
+            break;
         }
 
-        // Redraw player and border
-        box(game, 0, 0);
-        mvwaddch(game, py, px, '@');
-
-        // Check if standing on grass
+        // Trigger grass event
         if (map[py - 1][px - 1] == 'W')
-            onGrass(game);
-        else
-            mvwprintw(game, HEIGHT - 1, 2, "                             ");
+            onGrassEvent(game);
 
+        // Exit if touching the banner
+        if (py == 1)
+        {
+            mvwprintw(game, 0, 2, "[Exiting overworld...]");
+            wrefresh(game);
+            napms(400);
+            break;
+        }
+
+        // Draw player
+        mvwaddch(game, py, px, '@');
         wrefresh(game);
     }
 
-    endwin();
+exit_overworld:
+    for (int i = 0; i < boxHeight - 2; i++)
+        free(map[i]);
+    free(map);
     return 0;
 }
-

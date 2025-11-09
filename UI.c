@@ -5,6 +5,7 @@
 #include <signal.h>
 #include <stdbool.h>
 #include "sprite.c"
+#include "test.c"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -109,7 +110,7 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx)
                 flushinp();
                 return highlight;
             case 27: // ESC
-                lastKeypad = win;
+                lastKeypad = commandHud;
                 int exitChoices = exitMenu();
                 flushinp();
                 if (exitChoices == 1) return -1;
@@ -163,10 +164,10 @@ void draw_all()
 
 int exitMenu()
 {
-    // Disable keypad for main window to avoid conflict
+    // Disable keypad for main window to avoid input conflict
     keypad(lastKeypad, FALSE);
 
-    // Create new popup window
+    // Create popup window
     WINDOW *exitHud = newwin(7, 50, 15, 25);
     box(exitHud, 0, 0);
     mvwprintw(exitHud, 0, 22, "Exit");
@@ -180,15 +181,15 @@ int exitMenu()
 
     while (1)
     {
-        flushinp();
-        // Draw choices centered at bottom
+        // Draw choices
         for (int i = 0; i < 2; i++)
         {
             int x = 19 + (i * 6);
             int y = 4;
-            if (i == highlight) wattron(exitHud, A_REVERSE);
+            if (i == highlight)
+                wattron(exitHud, A_REVERSE);
             mvwprintw(exitHud, y, x, "%s", strChoices[i]);
-            if (i == highlight) wattroff(exitHud, A_REVERSE);
+            wattroff(exitHud, A_REVERSE);
         }
 
         wrefresh(exitHud);
@@ -202,29 +203,44 @@ int exitMenu()
             if (highlight < 0)
                 highlight = 0;
             break;
-        case KEY_RIGHT: // You used KEY_DOWN by mistake
+
+        case KEY_RIGHT:
             highlight++;
             if (highlight > 1)
                 highlight = 1;
             break;
+
         case 10: // Enter key
-            delwin(exitHud);
-            flushinp();
-            keypad(lastKeypad, TRUE);
-            draw_all();
-            debugMenu();
-            return highlight; // 0 = No, 1 = Yes
-        case 27: // ESC
+        {
+            keypad(exitHud, FALSE);
+            int result = highlight;
+            werase(exitHud);
+            wrefresh(exitHud);
             delwin(exitHud);
             keypad(lastKeypad, TRUE);
             draw_all();
             debugMenu();
-            return 0; // treat ESC as "No"
+            return result; // 0 = No, 1 = Yes
+        }
+
+        case 27: // ESC key
+        {
+            keypad(exitHud, FALSE);
+            werase(exitHud);
+            wrefresh(exitHud);
+            delwin(exitHud);
+            keypad(lastKeypad, TRUE);
+            draw_all();
+            debugMenu();
+            return 0; // Treat ESC as "No"
+        }
+
         default:
             break;
         }
     }
 }
+
 void handle_resize(int sig)
 {
     endwin();
@@ -256,6 +272,7 @@ int main(void)
     while (1)
     {
         int choice = usrInputChoices(menuChoices, commandHud, 1, 1);
+        if (choice == 0) overworldStart(mainScreen);
         if (choice == -1) break; // ESC pressed
     }
 
