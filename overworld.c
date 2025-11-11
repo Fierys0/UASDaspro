@@ -3,9 +3,13 @@
 
 int onGrass = 0;
 
+void battleStart();
+
 void onGrassEvent(WINDOW *game)
 {
-    mvwprintw(game, 0, 2, "[You step on grass]");
+    srand(time(NULL));
+    int randomEncounter = rand() % 4;
+    //if (randomEncounter == 1) battleStart();
     wrefresh(game);
     napms(150);
 }
@@ -29,6 +33,11 @@ void generateMap(char **map, int h, int w)
 
 int overworldStart(WINDOW *game)
 {
+    init_pair(1, COLOR_WHITE, COLOR_BLUE);
+    init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(3, COLOR_BLACK, COLOR_GREEN);
+    init_pair(4, COLOR_BLACK, COLOR_RED);
+    init_pair(5, COLOR_WHITE, COLOR_BLACK);
     int boxHeight, boxWidth;
     getmaxyx(game, boxHeight, boxWidth);
     keypad(game, TRUE);
@@ -51,14 +60,21 @@ int overworldStart(WINDOW *game)
             mvwaddch(game, y + 1, x + 1, map[y][x]);
 
     // Draw the exit banner (inside the box)
-    for (int x = 1; x < boxWidth - 1; x++)
-        mvwaddch(game, 1, x, '-');
+    for (int x = 1; x < boxWidth - 1; x++){
+      attron(COLOR_PAIR(4));
+      mvwaddch(game, 1, x, '-');
+      attron(COLOR_PAIR(4));
+    }
+    attron(COLOR_PAIR(4));
     mvwprintw(game, 1, (boxWidth / 2) - 5, "---EXIT---");
+    attron(COLOR_PAIR(4));
 
     // Player position
     int px = boxWidth / 2;
     int py = boxHeight / 2;
+    attron(COLOR_PAIR(2));
     mvwaddch(game, py, px, '@');
+    attron(COLOR_PAIR(2));
     wrefresh(game);
 
     int ch;
@@ -87,8 +103,6 @@ int overworldStart(WINDOW *game)
             if (px < boxWidth - 2)
                 px++;
             break;
-        case 'q':
-            goto exit_overworld;
         default:
             break;
         }

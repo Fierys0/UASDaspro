@@ -5,7 +5,7 @@
 #include <signal.h>
 #include <stdbool.h>
 #include "sprite.c"
-#include "test.c"
+#include "overworld.c"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -148,7 +148,7 @@ void draw_all()
 
     mainScreen = newwin(31, 70, 0, 31);
     box(mainScreen, 0, 0);
-    mvwprintw(mainScreen, 1, 0, "%s", backgroundA);
+    mvwprintw(mainScreen, 1, 0, "%s", battleBG);
     wrefresh(mainScreen);
 
     commandHud = newwin(22, 30, 15, 0);
@@ -248,6 +248,7 @@ void handle_resize(int sig)
     clear();
     resizeterm(LINES, COLS);
     draw_all();
+    debugMenu();
 }
 
 int main(void)
@@ -261,6 +262,13 @@ int main(void)
     keypad(stdscr, TRUE);
     refresh();
     raw();
+    start_color();
+
+    init_pair(1, COLOR_WHITE, COLOR_BLUE);
+    init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(3, COLOR_BLACK, COLOR_GREEN);
+    init_pair(4, COLOR_BLACK, COLOR_RED);
+    init_pair(5, COLOR_WHITE, COLOR_BLACK);
 
     signal(SIGWINCH, handle_resize);
     draw_all();
@@ -272,7 +280,11 @@ int main(void)
     while (1)
     {
         int choice = usrInputChoices(menuChoices, commandHud, 1, 1);
-        if (choice == 0) overworldStart(mainScreen);
+        if (choice == 0) 
+        {
+          overworldStart(mainScreen);
+          draw_all();
+        }
         if (choice == -1) break; // ESC pressed
     }
 

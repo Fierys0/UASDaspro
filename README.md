@@ -9,6 +9,10 @@ Program untuk memenuhi tugas Ujian Akhir Semester Dasar Pemrograman
 * fix esc bug **(PLEASE)**
 * clean up code
 * fix UI refresh
-* add enemy sprite
+* ~~add enemy sprite~~ Done!
 * add enemy health
 * add screen transition
+* ~~add title screen~~ Done!]
+* add skill
+* add item
+* add inventory
