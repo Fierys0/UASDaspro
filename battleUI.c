@@ -62,14 +62,12 @@ void battleStart()
     wrefresh(mainScreen);
 
     enemySprite = newwin(17, 35, 0, 0);
-    box(enemySprite, 32, 32);
     center_box(mainScreen, enemySprite, 15);
     
     enemyHealthHud = newwin(7, 35, 0, 0);
-    box(enemyHealthHud, 0, 0);
     center_box(mainScreen, enemyHealthHud, 8);
 
-    char *battleChoices[] = {"Attack", "Defend", "Skill", "Item", "Run"};
+    char *battleChoices[] = {"Attack", "Defend", "Skill", "Item", "Run", NULL};
     while (1)
     {
       int choices = usrInputChoices(battleChoices, commandHud, 1, 1);

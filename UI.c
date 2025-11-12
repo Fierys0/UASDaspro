@@ -97,23 +97,9 @@ void center_box(WINDOW *parent, WINDOW *child, int y_offset) {
     wrefresh(child);
 }
 
-void center_text(WINDOW *win, const char *text, int y_offset) {
-    int height, width;
-    getmaxyx(win, height, width);
-
-    int text_len = strlen(text);
-    int startx = (width - text_len) / 2;
-
-    // Make sure it doesn’t draw outside the box
-    if (startx < 1) startx = 1;
-    if (y_offset < 1) y_offset = 1;
-
-    mvwprintw(win, y_offset, startx, "%s", text);
-    wrefresh(win);
-}
-
 int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx)
 {
+    keypad(win, TRUE);
     int highlight = 0;
     int arraySize = 0;
     while (strChoices[arraySize] != NULL)
@@ -184,7 +170,7 @@ void draw_all()
 
     mainScreen = newwin(31, 70, 0, 31);
     box(mainScreen, 0, 0);
-    mvwprintw(mainScreen, 1, 0, "%s", battleBG);
+    mvwprintw(mainScreen, 1, 0, "%s", backgroundA);
     wrefresh(mainScreen);
 
     commandHud = newwin(22, 30, 15, 0);
@@ -310,7 +296,6 @@ int main(void)
     draw_all();
 
     char *menuChoices[] = {"Explore", "Shop", "Save", "Load", NULL};
-    keypad(commandHud, TRUE);
 
     debugMenu();
     while (1)
