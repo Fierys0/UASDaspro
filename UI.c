@@ -76,6 +76,42 @@ WINDOW *debugMenu()
   wrefresh(debugHud);
 }
 
+void center_box(WINDOW *parent, WINDOW *child, int y_offset) {
+    int parent_h, parent_w;
+    int child_h, child_w;
+    int startx;
+
+    // Get dimensions of parent and child
+    getmaxyx(parent, parent_h, parent_w);
+    getmaxyx(child, child_h, child_w);
+
+    // Calculate centered X position
+    startx = (parent_w - child_w) / 2;
+
+    // Move child to new position (relative to parent)
+    mvderwin(child, y_offset, startx);
+
+    // Redraw box and refresh both windows
+    box(child, 0, 0);
+    wrefresh(parent);
+    wrefresh(child);
+}
+
+void center_text(WINDOW *win, const char *text, int y_offset) {
+    int height, width;
+    getmaxyx(win, height, width);
+
+    int text_len = strlen(text);
+    int startx = (width - text_len) / 2;
+
+    // Make sure it doesn’t draw outside the box
+    if (startx < 1) startx = 1;
+    if (y_offset < 1) y_offset = 1;
+
+    mvwprintw(win, y_offset, startx, "%s", text);
+    wrefresh(win);
+}
+
 int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx)
 {
     int highlight = 0;

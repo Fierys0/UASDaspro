@@ -1,6 +1,17 @@
 
 WINDOW * enemySprite, * enemyHealthHud;
 
+extern WINDOW * mainScreen, * textHud, *commandHud;
+extern bool isDebug;
+extern void center_box(WINDOW *parent, WINDOW *child, int y_offset);
+extern int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx);
+extern void debugMenuInput(int usrInput);
+extern WINDOW *debugMenu();
+extern void draw_all();
+extern void handle_resize(int sig);
+extern int exitMenu();
+extern void debugMenuInput(int usrInput);
+
 int mainboxLimit = 1;
 
 void matrixAnimationNcurses(WINDOW* win, const char* stringData, int startX, unsigned int characterDelay, unsigned int textDelay) {
@@ -43,4 +54,28 @@ void matrixAnimationNcurses(WINDOW* win, const char* stringData, int startX, uns
     }
 
     wrefresh(win);
+}
+
+void battleStart()
+{
+    mvwprintw(mainScreen, 1, 0, "%s", battleBG);
+    wrefresh(mainScreen);
+
+    enemySprite = newwin(17, 35, 0, 0);
+    box(enemySprite, 32, 32);
+    center_box(mainScreen, enemySprite, 15);
+    
+    enemyHealthHud = newwin(7, 35, 0, 0);
+    box(enemyHealthHud, 0, 0);
+    center_box(mainScreen, enemyHealthHud, 8);
+
+    char *battleChoices[] = {"Attack", "Defend", "Skill", "Item", "Run"};
+    while (1)
+    {
+      int choices = usrInputChoices(battleChoices, commandHud, 1, 1);
+      if (choices == 4) break;
+    }
+    wrefresh(mainScreen);
+    wrefresh(enemyHealthHud);
+    wrefresh(enemySprite);
 }

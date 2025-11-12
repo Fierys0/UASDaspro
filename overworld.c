@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <time.h>
+#include "battleUI.c"
 
 int onGrass = 0;
 
@@ -9,7 +10,7 @@ void onGrassEvent(WINDOW *game)
 {
     srand(time(NULL));
     int randomEncounter = rand() % 4;
-    //if (randomEncounter == 1) battleStart();
+    if (randomEncounter == 1) battleStart();
     wrefresh(game);
     napms(150);
 }
@@ -109,7 +110,10 @@ int overworldStart(WINDOW *game)
 
         // Trigger grass event
         if (map[py - 1][px - 1] == 'W')
-            onGrassEvent(game);
+        {
+          keypad(game, FALSE);
+          onGrassEvent(game);
+        }
 
         // Exit if touching the banner
         if (py == 1)
