@@ -1,14 +1,14 @@
 # Tugas UAS Dasar Pemrograman
 Program untuk memenuhi tugas Ujian Akhir Semester Dasar Pemrograman
-a
+
 ## Todo list
 * merge [UTSDaspro](https://github.com/Fierys0/UTSDaspro)
 * add shop
 * add shop UI
-* add battle UI
+* ~add battle UI~ Done!
 * ~~fix esc bug **(PLEASE)**~~ Done!
 * clean up code Eh...
-* fix UI refresh
+* ~~fix UI refresh~~ Consider it done
 * ~~add enemy sprite~~ Done!
 * add enemy health
 * add screen transition Eh...

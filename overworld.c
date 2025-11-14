@@ -2,17 +2,49 @@
 #include <time.h>
 #include "battleUI.c"
 
+extern void drawMainScreen();
+extern int debugMessagePosition;
+extern void inputDebugMessage(const char *messageString, ...);
+extern void debugMenuInput(int usrInput);
+extern bool isDebug;
+extern int mainBoxLimit;
+extern void matrixAnimationNcurses(WINDOW* win, const char* stringData, int startX, unsigned int characterDelay, unsigned int textDelay);
 int onGrass = 0;
+extern WINDOW * textHud;
+extern void clearTextHud();
 
 void battleStart();
 
-void onGrassEvent(WINDOW *game)
+void onGrassEvent(WINDOW *game, char **map)
 {
+    inputDebugMessage("Player on grass");
+    keypad(game, FALSE);
     srand(time(NULL));
     int randomEncounter = rand() % 4;
-    if (randomEncounter == 1) battleStart();
+    inputDebugMessage("randEn: %d", randomEncounter);
+    if (randomEncounter == 1)
+    {
+      clearTextHud();
+      matrixAnimationNcurses(textHud, "Sesuatu datang menghampirimu!", 1, 1500, 1500);
+      usleep(1500000);
+      battleStart();
+    }
+    drawMainScreen();
+    for (int i = 0; i < 29; i++) {
+      mvwprintw(game, i + 1, 1, "%s", map[i]);
+    }
+    for (int x = 1; x < 70 - 1; x++){
+      attron(COLOR_PAIR(4));
+      mvwaddch(game, 1, x, '-');
+      attron(COLOR_PAIR(4));
+      wrefresh(game);
+    }
+    attron(COLOR_PAIR(4));
+    mvwprintw(game, 1, (70 / 2) - 5, "---EXIT---");
+    attron(COLOR_PAIR(4));
+
     wrefresh(game);
-    napms(150);
+    keypad(game, TRUE);
 }
 
 void generateMap(char **map, int h, int w)
@@ -85,6 +117,14 @@ int overworldStart(WINDOW *game)
 
         // Restore old tile
         mvwaddch(game, py, px, map[py - 1][px - 1]);
+        debugMenuInput(ch);
+
+        // Trigger grass event
+        if (map[py - 1][px - 1] == 'W')
+        {
+          keypad(game, FALSE);
+          onGrassEvent(game, map);
+        }
 
         switch (ch)
         {
@@ -107,14 +147,6 @@ int overworldStart(WINDOW *game)
         default:
             break;
         }
-
-        // Trigger grass event
-        if (map[py - 1][px - 1] == 'W')
-        {
-          keypad(game, FALSE);
-          onGrassEvent(game);
-        }
-
         // Exit if touching the banner
         if (py == 1)
         {

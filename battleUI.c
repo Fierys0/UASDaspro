@@ -3,7 +3,7 @@ WINDOW * enemySprite, * enemyHealthHud;
 
 extern WINDOW * mainScreen, * textHud, *commandHud;
 extern bool isDebug;
-extern void center_box(WINDOW *parent, WINDOW *child, int y_offset);
+extern void center_box(WINDOW *parent, WINDOW *child, int y_offset, int styley, int stylex);
 extern int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx);
 extern void debugMenuInput(int usrInput);
 extern WINDOW *debugMenu();
@@ -11,11 +11,18 @@ extern void draw_all();
 extern void handle_resize(int sig);
 extern int exitMenu();
 extern void debugMenuInput(int usrInput);
+extern void drawTextHud();
+extern void drawCommandHud();
+extern void drawMainScreen();
+extern void drawPlayerHud();
+extern int debugMessagePosition;
+extern void inputDebugMessage(const char *messageString, ...);
+extern const char* slimeSprite;
+extern void clearCommandHud();
 
 int mainboxLimit = 1;
 
 void matrixAnimationNcurses(WINDOW* win, const char* stringData, int startX, unsigned int characterDelay, unsigned int textDelay) {
-    mainboxLimit++;
     if (mainboxLimit > 4)
     {
       mainboxLimit = 1;
@@ -52,6 +59,7 @@ void matrixAnimationNcurses(WINDOW* win, const char* stringData, int startX, uns
         wrefresh(win);
         usleep(textDelay);
     }
+    mainboxLimit++;
 
     wrefresh(win);
 }
@@ -60,20 +68,25 @@ void battleStart()
 {
     mvwprintw(mainScreen, 1, 0, "%s", battleBG);
     wrefresh(mainScreen);
-
-    enemySprite = newwin(17, 35, 0, 0);
-    center_box(mainScreen, enemySprite, 15);
+    // Draw the sprite safely
     
-    enemyHealthHud = newwin(7, 35, 0, 0);
-    center_box(mainScreen, enemyHealthHud, 8);
+    enemySprite = newwin(14, 31, 0, 0);
+    center_box(mainScreen, enemySprite, 12, 0, 0);
+    mvwaddstr(enemySprite, 1, 0, goblinSprite); // <-- use mvwaddstr, not mvwprintw
+    wrefresh(enemySprite);
 
+    enemyHealthHud = newwin(7, 31, 0, 0);
+    center_box(mainScreen, enemyHealthHud, 6, 0, 0);
+    mvwprintw(enemyHealthHud, 1, 1, "Slime");
+    wrefresh(enemyHealthHud);
+    
+    clearCommandHud();
     char *battleChoices[] = {"Attack", "Defend", "Skill", "Item", "Run", NULL};
     while (1)
     {
-      int choices = usrInputChoices(battleChoices, commandHud, 1, 1);
+      int choices = usrInputChoices(battleChoices, commandHud, 2, 1);
       if (choices == 4) break;
     }
-    wrefresh(mainScreen);
-    wrefresh(enemyHealthHud);
-    wrefresh(enemySprite);
+
+    clearCommandHud();
 }

@@ -4,8 +4,10 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include "sprite.c"
 #include "overworld.c"
+#include <stdarg.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -27,6 +29,7 @@ void resize_console(int cols, int rows)
 
 bool isDebug = true;
 int debugPosition = 1;
+int debugMessagePosition = 1;
 WINDOW * lastKeypad;
 
 WINDOW *debugHud, *playerhud, *mainScreen, *commandHud, *textHud, *debugMessageHud;
@@ -37,6 +40,13 @@ WINDOW *debugMenu();
 void draw_all();
 void handle_resize(int sig);
 int exitMenu();
+void drawTextHud();
+void drawCommandHud();
+void drawMainScreen();
+void drawPlayerHud();
+void drawDebugInput();
+void drawDebugMessage();
+
 void debugMenuInput(int usrInput)
 {
     if (!isDebug || !debugHud) return;
@@ -57,7 +67,7 @@ void debugMenuInput(int usrInput)
     {
       debugPosition = 2;
       delwin(debugHud);
-      debugMenu();
+      drawDebugInput();
       mvwprintw(debugHud, 1, 1, "%c (%d)", (char)usrInput, usrInput);
     }
     wrefresh(debugHud);
@@ -66,35 +76,91 @@ void debugMenuInput(int usrInput)
 WINDOW *debugMenu()
 {
   if (!isDebug) return NULL;
-  debugMessageHud = newwin(26, 20, 0 , 102);
-  box(debugMessageHud, 0, 0);
-  mvwprintw(debugMessageHud, 0, 1, "Debug Messages");
-  wrefresh(debugMessageHud);
+  drawDebugMessage();
+  drawDebugInput();
+}
+
+void drawDebugInput()
+{
   debugHud = newwin(11, 20, 26, 102);
   box(debugHud, 0, 0);
   mvwprintw(debugHud, 0, 1, "Debug Input");
   wrefresh(debugHud);
 }
 
-void center_box(WINDOW *parent, WINDOW *child, int y_offset) {
-    int parent_h, parent_w;
-    int child_h, child_w;
-    int startx;
+void drawDebugMessage()
+{
+  debugMessageHud = newwin(26, 20, 0 , 102);
+  box(debugMessageHud, 0, 0);
+  mvwprintw(debugMessageHud, 0, 1, "Debug Messages");
+  wrefresh(debugMessageHud);
+}
 
-    // Get dimensions of parent and child
+void inputDebugMessage(const char *messageString, ...)
+{
+    va_list args;
+    va_start(args, messageString);
+
+    wmove(debugMessageHud, debugMessagePosition, 1);
+    vw_printw(debugMessageHud, messageString, args);
+
+    va_end(args);
+
+    debugMessagePosition++;
+    if (debugMessagePosition >= 25)
+    {
+        debugMessagePosition = 2;
+        delwin(debugMessageHud);
+        drawDebugMessage();
+        wmove(debugMessageHud, 1, 1);
+        va_start(args, messageString);
+        vw_printw(debugMessageHud, messageString, args);
+        va_end(args);
+    }
+
+    wrefresh(debugMessageHud);
+}
+
+void center_box(WINDOW *parent, WINDOW *child, int y_offset, int styley, int stylex)
+{
+    int parent_h, parent_w;
+    int parent_y, parent_x;
+    int child_h, child_w;
+    int starty, startx;
+
+    // Get parent's position and size
+    getbegyx(parent, parent_y, parent_x);
     getmaxyx(parent, parent_h, parent_w);
+
+    // Get child's size
     getmaxyx(child, child_h, child_w);
 
-    // Calculate centered X position
-    startx = (parent_w - child_w) / 2;
+    // Center horizontally inside parent
+    startx = parent_x + (parent_w - child_w) / 2;
 
-    // Move child to new position (relative to parent)
-    mvderwin(child, y_offset, startx);
+    // Optionally offset vertically relative to parent's top
+    starty = y_offset;
 
-    // Redraw box and refresh both windows
-    box(child, 0, 0);
+    // Move and redraw the child
+    mvwin(child, starty, startx);
+    werase(child);
+    box(child, styley, stylex);
+
+    // Refresh order: parent first, then child
     wrefresh(parent);
     wrefresh(child);
+}
+
+void clearCommandHud()
+{
+  delwin(commandHud);
+  drawCommandHud();
+}
+
+void clearTextHud()
+{
+  delwin(textHud);
+  drawTextHud();
 }
 
 int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx)
@@ -111,7 +177,7 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx)
         for (int i = 0; i < arraySize; i++)
         {
             if (i == highlight)
-                wattron(win, A_REVERSE);
+            wattron(win, A_REVERSE);
             mvwprintw(win, i + starty, startx, "%s", strChoices[i]);
             wattroff(win, A_REVERSE);
         }
@@ -122,11 +188,11 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx)
         {
             case KEY_UP:
                 highlight--;
-                if (highlight < 0) highlight = 0;
+                if (highlight < 0) highlight = arraySize - 1;
                 break;
             case KEY_DOWN:
                 highlight++;
-                if (highlight >= arraySize) highlight = arraySize - 1;
+                if (highlight >= arraySize) highlight = 0;
                 break;
             case 10: // Enter
                 flushinp();
@@ -135,7 +201,7 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx)
                 lastKeypad = commandHud;
                 int exitChoices = exitMenu();
                 flushinp();
-                if (exitChoices == 1) return -1;
+                if (exitChoices == 1) {endwin(); exit(0);}
                 break;
             default:
                 break;
@@ -147,12 +213,8 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx)
     }
 }
 
-// Beta dynamic UI vs Sigma static UI
-void draw_all()
+void drawPlayerHud()
 {
-    clear();
-    refresh();
-
     playerhud = newwin(15, 30, 0, 0);
     box(playerhud, 0, 0);
     mvwprintw(playerhud, 0, 1, "Player");
@@ -167,21 +229,44 @@ void draw_all()
     mvwprintw(playerhud, 11, 1, "Armor: Cloth");
     mvwprintw(playerhud, 12, 1, "Weapon: Iron Sword");
     wrefresh(playerhud);
+}
 
+void drawMainScreen()
+{
     mainScreen = newwin(31, 70, 0, 31);
     box(mainScreen, 0, 0);
     mvwprintw(mainScreen, 1, 0, "%s", backgroundA);
     wrefresh(mainScreen);
+}
 
+void drawCommandHud()
+{
     commandHud = newwin(22, 30, 15, 0);
     box(commandHud, 0, 0);
     mvwprintw(commandHud, 0, 1, "Command");
     wrefresh(commandHud);
+}
 
+void drawTextHud()
+{
     textHud = newwin(6, 70, 31, 31);
     box(textHud, 0, 0);
     mvwprintw(textHud, 0, 1, "Text");
     wrefresh(textHud);
+}
+
+// Beta dynamic UI vs Sigma static UI
+void draw_all()
+{
+    clear();
+    refresh();
+
+    drawPlayerHud();
+    drawMainScreen();
+    drawCommandHud();
+    drawTextHud();
+
+    debugMenu();
 }
 
 int exitMenu()
@@ -209,7 +294,7 @@ int exitMenu()
             int x = 19 + (i * 6);
             int y = 4;
             if (i == highlight)
-                wattron(exitHud, A_REVERSE);
+              wattron(exitHud, A_REVERSE);
             mvwprintw(exitHud, y, x, "%s", strChoices[i]);
             wattroff(exitHud, A_REVERSE);
         }
@@ -240,8 +325,7 @@ int exitMenu()
             wrefresh(exitHud);
             delwin(exitHud);
             keypad(lastKeypad, TRUE);
-            draw_all();
-            debugMenu();
+            drawMainScreen(); drawCommandHud();
             return result; // 0 = No, 1 = Yes
         }
 
@@ -252,8 +336,7 @@ int exitMenu()
             wrefresh(exitHud);
             delwin(exitHud);
             keypad(lastKeypad, TRUE);
-            draw_all();
-            debugMenu();
+            drawMainScreen(); drawCommandHud();
             return 0; // Treat ESC as "No"
         }
 
@@ -296,13 +379,14 @@ int main(void)
     draw_all();
 
     char *menuChoices[] = {"Explore", "Shop", "Save", "Load", NULL};
-
     debugMenu();
+    inputDebugMessage("Program Init");
     while (1)
     {
         int choice = usrInputChoices(menuChoices, commandHud, 1, 1);
         if (choice == 0) 
         {
+          clearCommandHud();
           overworldStart(mainScreen);
           draw_all();
         }
