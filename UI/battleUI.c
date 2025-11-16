@@ -70,7 +70,7 @@ void battleStart()
     wrefresh(mainScreen);
     // Draw the sprite safely
     
-    enemySprite = newwin(14, 31, 0, 0);
+    enemySprite = newwin(14, 30, 0, 0);
     center_box(mainScreen, enemySprite, 12, 0, 0);
     mvwaddstr(enemySprite, 1, 0, goblinSprite); // <-- use mvwaddstr, not mvwprintw
     wrefresh(enemySprite);
@@ -84,7 +84,7 @@ void battleStart()
     char *battleChoices[] = {"Attack", "Defend", "Skill", "Item", "Run", NULL};
     while (1)
     {
-      int choices = usrInputChoices(battleChoices, commandHud, 2, 1);
+      int choices = usrInputChoices(battleChoices, commandHud, 1, 1);
       if (choices == 4) break;
     }
 

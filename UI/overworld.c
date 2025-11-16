@@ -119,13 +119,6 @@ int overworldStart(WINDOW *game)
         mvwaddch(game, py, px, map[py - 1][px - 1]);
         debugMenuInput(ch);
 
-        // Trigger grass event
-        if (map[py - 1][px - 1] == 'W')
-        {
-          keypad(game, FALSE);
-          onGrassEvent(game, map);
-        }
-
         switch (ch)
         {
         case KEY_UP:
@@ -154,6 +147,13 @@ int overworldStart(WINDOW *game)
             wrefresh(game);
             napms(400);
             break;
+        }
+
+        // Trigger grass event
+        if (map[py - 1][px - 1] == 'W')
+        {
+          keypad(game, FALSE);
+          onGrassEvent(game, map);
         }
 
         // Draw player

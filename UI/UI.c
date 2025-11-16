@@ -8,6 +8,7 @@
 #include "sprite.c"
 #include "overworld.c"
 #include <stdarg.h>
+#include "shopUI.c"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -70,6 +71,7 @@ void debugMenuInput(int usrInput)
       drawDebugInput();
       mvwprintw(debugHud, 1, 1, "%c (%d)", (char)usrInput, usrInput);
     }
+    box(debugHud, 0, 0);
     wrefresh(debugHud);
 }
 
@@ -356,7 +358,7 @@ void handle_resize(int sig)
     debugMenu();
 }
 
-int main(void)
+int mainUI()
 {
     setlocale(LC_ALL, "");
     initscr();
@@ -388,7 +390,10 @@ int main(void)
         {
           clearCommandHud();
           overworldStart(mainScreen);
-          draw_all();
+          drawMainScreen();
+        } else if (choice == 1){
+          clearCommandHud();
+          startShop();
         }
         if (choice == -1) break; // ESC pressed
     }

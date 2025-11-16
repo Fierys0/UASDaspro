@@ -2,10 +2,11 @@
 Program untuk memenuhi tugas Ujian Akhir Semester Dasar Pemrograman
 
 ## Todo list
-* merge [UTSDaspro](https://github.com/Fierys0/UTSDaspro)
+* ~~merge [UTSDaspro](https://github.com/Fierys0/UTSDaspro)~~
 * add shop
-* add shop UI
+* ~~add shop UI~~ Done!
 * ~add battle UI~ Done!
+* re-implement battle
 * ~~fix esc bug **(PLEASE)**~~ Done!
 * clean up code Eh...
 * ~~fix UI refresh~~ Consider it done
