@@ -129,7 +129,7 @@ void battleAttack(struct Player* player, struct entityData* enemy) {
         enemy->health -= (playerDamage - enemy->defense);
         if (enemy->health < 0) enemy->health = 0;
         if (enemy->health == 0) {
-            printf("%s defeated!\n", enemy->name);
+            matrixAnimationNcurses(textHud,1, 1500, 1500, "%s defeated!\n", enemy->name);
             battleEnd(player, enemy);
             return;
         }
@@ -145,7 +145,7 @@ void battleAttack(struct Player* player, struct entityData* enemy) {
         enemy->health -= (playerDamage - enemy->defense);
         if (enemy->health < 0) enemy->health = 0;
         if (enemy->health == 0) {
-            printf("%s defeated!\n", enemy->name);
+            matrixAnimationNcurses(textHud,1, 1500, 1500, "%s defeated!\n", enemy->name);
             battleEnd(player, enemy);
         }
     }

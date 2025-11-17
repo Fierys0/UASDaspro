@@ -219,17 +219,17 @@ void drawPlayerHud()
 {
     playerhud = newwin(15, 30, 0, 0);
     box(playerhud, 0, 0);
-    mvwprintw(playerhud, 0, 1, "Player");
+    mvwprintw(playerhud, 0, 1, "%s", player.name);
     mvwprintw(playerhud, 2, 1, "[Status]");
-    mvwprintw(playerhud, 3, 1, "LV 10");
-    mvwprintw(playerhud, 4, 1, "HP [##########] | 100/100");
+    mvwprintw(playerhud, 3, 1, "LV %d", player.level);
+    mvwprintw(playerhud, 4, 1, "HP [##########] | %d/%d", );
     mvwprintw(playerhud, 5, 1, "EXP [##########] | 10/300");
-    mvwprintw(playerhud, 6, 1, "Money: 3000");
+    mvwprintw(playerhud, 6, 1, "Money: %d", player.money);
     mvwprintw(playerhud, 7, 1, "Def: 10 Agi: 10");
     mvwprintw(playerhud, 8, 1, "Status Effect: None");
     mvwprintw(playerhud, 10, 1, "[Equipments]");
-    mvwprintw(playerhud, 11, 1, "Armor: Cloth");
-    mvwprintw(playerhud, 12, 1, "Weapon: Iron Sword");
+    mvwprintw(playerhud, 11, 1, "Armor: %s", player.armor.armorName);
+    mvwprintw(playerhud, 12, 1, "Weapon: %s", player.weapon.weaponName);
     wrefresh(playerhud);
 }
 

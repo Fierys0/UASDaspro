@@ -3,6 +3,8 @@
 
 int main()
 {
+  initPlayer();
+  initEnemies();
   mainUI();
   return 0;
 }

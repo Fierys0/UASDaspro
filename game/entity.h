@@ -33,6 +33,7 @@ struct entityData {
     float moneyMultiplier;
     float expMultiplier;
     int statusEffect[4];
+    const char* enemySprite;
 };
 
 struct Player {

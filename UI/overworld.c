@@ -24,10 +24,12 @@ void onGrassEvent(WINDOW *game, char **map)
     inputDebugMessage("randEn: %d", randomEncounter);
     if (randomEncounter == 1)
     {
+      struct entityData enemy;
+      enemy = randomBattle;
       clearTextHud();
-      matrixAnimationNcurses(textHud, "Sesuatu datang menghampirimu!", 1, 1500, 1500);
+      matrixAnimationNcurses(textHud, 1, 1500, 1500, "Sesuatu mendekat!");
       usleep(1500000);
-      battleStart();
+      battleStart(player, enemy);
     }
     drawMainScreen();
     for (int i = 0; i < 29; i++) {
