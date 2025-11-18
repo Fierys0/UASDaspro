@@ -2,7 +2,7 @@
 #define ENTITY_H
 
 struct weaponData {
-    char* weaponName;
+    char name[100];
     int damage;
     float critRate;
     float critDamage;
@@ -13,7 +13,7 @@ struct weaponData {
 };
 
 struct armorData {
-    char* armorName;
+    char name[100];
     int baseDefense;
     int resistance;
     char description[255];
@@ -37,7 +37,7 @@ struct entityData {
 };
 
 struct Player {
-    char* name;
+    char name[25];
     int maxHealth;
     int health;
     struct weaponData weapon;
@@ -51,6 +51,7 @@ struct Player {
     int exp;
     int money;
     int statusEffect[4];
+    int inventory[2][255];
 };
 
 #endif

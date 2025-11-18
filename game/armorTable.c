@@ -37,3 +37,17 @@ struct armorData armor[] = {
     {"Infinity Loop", 30, 35, "Endless cycle of defense and resistance", 3000}
 };
 
+void sortArmorsByPrice() {
+    int size = sizeof(armor) / sizeof(armor[0]);
+
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = i + 1; j < size; j++) {
+            if (armor[i].price > armor[j].price) {
+                struct armorData temp = armor[i];
+                armor[i] = armor[j];
+                armor[j] = temp;
+            }
+        }
+    }
+}
+

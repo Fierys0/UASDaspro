@@ -10,24 +10,6 @@
 #include <stdarg.h>
 #include "shopUI.c"
 
-#ifdef _WIN32
-#include <windows.h>
-void resize_console(int width, int height)
-{
-    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-    SMALL_RECT rect = {0, 0, width - 1, height - 1};
-    COORD coord = {width, height};
-    SetConsoleScreenBufferSize(h, coord);
-    SetConsoleWindowInfo(h, TRUE, &rect);
-}
-#else
-void resize_console(int cols, int rows)
-{
-    printf("\033[8;%d;%dt", rows, cols);
-    fflush(stdout);
-}
-#endif
-
 bool isDebug = true;
 int debugPosition = 1;
 int debugMessagePosition = 1;
@@ -35,7 +17,7 @@ WINDOW * lastKeypad;
 
 WINDOW *debugHud, *playerhud, *mainScreen, *commandHud, *textHud, *debugMessageHud;
 
-int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx);
+int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index));
 void debugMenuInput(int usrInput);
 WINDOW *debugMenu();
 void draw_all();
@@ -47,6 +29,28 @@ void drawMainScreen();
 void drawPlayerHud();
 void drawDebugInput();
 void drawDebugMessage();
+
+
+void flashWindow(WINDOW *win, int flashes, int delay, int borderstyle)
+{
+    int h, w;
+    getmaxyx(win, h, w);
+
+    for (int i = 0; i < flashes; i++)
+    {
+        // ----- Reverse border -----
+        wattron(win, A_REVERSE);
+        box(win, borderstyle, borderstyle);
+        wattroff(win, A_REVERSE);
+        wrefresh(win);
+        napms(delay);
+
+        // ----- Normal border -----
+        box(win, borderstyle, borderstyle);
+        wrefresh(win);
+        napms(delay);
+    }
+}
 
 void debugMenuInput(int usrInput)
 {
@@ -165,13 +169,16 @@ void clearTextHud()
   drawTextHud();
 }
 
-int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx)
+int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index))
 {
     keypad(win, TRUE);
     int highlight = 0;
     int arraySize = 0;
     while (strChoices[arraySize] != NULL)
         arraySize++;
+
+    if (onHighlight)
+        onHighlight(highlight);
 
     while (1)
     {
@@ -184,6 +191,7 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx)
             wattroff(win, A_REVERSE);
         }
 
+        int oldHighlight = highlight;
         int usrInput = wgetch(win);
 
         switch (usrInput)
@@ -211,6 +219,8 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx)
 
         flushinp();
         debugMenuInput(usrInput);
+        if (highlight != oldHighlight && onHighlight)
+            onHighlight(highlight);
         wrefresh(win);
     }
 }
@@ -219,17 +229,17 @@ void drawPlayerHud()
 {
     playerhud = newwin(15, 30, 0, 0);
     box(playerhud, 0, 0);
-    mvwprintw(playerhud, 0, 1, "%s", player.name);
-    mvwprintw(playerhud, 2, 1, "[Status]");
+    mvwprintw(playerhud, 0, 1, "Status", player.name);
+    mvwprintw(playerhud, 2, 1, "[%s]", player.name);
     mvwprintw(playerhud, 3, 1, "LV %d", player.level);
-    mvwprintw(playerhud, 4, 1, "HP [##########] | %d/%d", );
-    mvwprintw(playerhud, 5, 1, "EXP [##########] | 10/300");
+    mvwprintw(playerhud, 4, 1, "HP %s | %d/%d", playerHealthBar, player.health, player.maxHealth);
+    mvwprintw(playerhud, 5, 1, "EXP %s | %d/%d", expBar, player.exp, (int)((float)baseEXPUP * player.level * 1.15));
     mvwprintw(playerhud, 6, 1, "Money: %d", player.money);
-    mvwprintw(playerhud, 7, 1, "Def: 10 Agi: 10");
+    mvwprintw(playerhud, 7, 1, "Def: %d Agi: %d", player.defensePoint, player.agilityPoint);
     mvwprintw(playerhud, 8, 1, "Status Effect: None");
     mvwprintw(playerhud, 10, 1, "[Equipments]");
-    mvwprintw(playerhud, 11, 1, "Armor: %s", player.armor.armorName);
-    mvwprintw(playerhud, 12, 1, "Weapon: %s", player.weapon.weaponName);
+    mvwprintw(playerhud, 11, 1, "Armor: %s", player.armor.name);
+    mvwprintw(playerhud, 12, 1, "Weapon: %s", player.weapon.name);
     wrefresh(playerhud);
 }
 
@@ -380,12 +390,19 @@ int mainUI()
     signal(SIGWINCH, handle_resize);
     draw_all();
 
-    char *menuChoices[] = {"Explore", "Shop", "Save", "Load", NULL};
+    sortArmorsByPrice();
+    sortWeaponsByPrice();
+
+    char *menuChoices[] = {"Explore", "Shop", "Rest", "Save", "Load", NULL};
     debugMenu();
     inputDebugMessage("Program Init");
     while (1)
     {
-        int choice = usrInputChoices(menuChoices, commandHud, 1, 1);
+        playerHealthBar = drawBar(player.health, player.maxHealth);
+        expBar = drawBar(player.exp, (int)((float)baseEXPUP * player.level * 1.50));
+        drawPlayerHud();
+
+        int choice = usrInputChoices(menuChoices, commandHud, 1, 1, NULL);
         if (choice == 0) 
         {
           clearCommandHud();
@@ -394,6 +411,13 @@ int mainUI()
         } else if (choice == 1){
           clearCommandHud();
           startShop();
+        } else if (choice == 2){
+          clearCommandHud();
+          playerRest(&player);
+        } else if (choice == 3){
+          savePlayer(&player);
+        } else if (choice == 4){
+          loadPlayer(&player);
         }
         if (choice == -1) break; // ESC pressed
     }

@@ -6,27 +6,27 @@ Program untuk memenuhi tugas Ujian Akhir Semester Dasar Pemrograman
 * add shop
 * ~~add shop UI~~ Done!
 * ~add battle UI~ Done!
-* re-implement battle
+* ~~re-implement battle~~ Done!
 * ~~fix esc bug **(PLEASE)**~~ Done!
 * clean up code Eh...
 * ~~fix UI refresh~~ Consider it done
 * ~~add enemy sprite~~ Done!
-* add enemy health
+* ~~add enemy health~~ Done!
 * add screen transition Eh...
 * ~~add title screen~~ Done!]
-* add skill
+* ~~add skill~~ Done!
 * add item
 * add inventory
 
 
 # Introduction
 
-### ░█████╗░████████╗██╗░░██╗███████╗██████╗░
-### ██╔══██╗╚══██╔══╝██║░░██║██╔════╝██╔══██╗
-### ███████║░░░██║░░░███████║█████╗░░██████╔╝
-### ██╔══██║░░░██║░░░██╔══██║██╔══╝░░██╔══██╗
-### ██║░░██║░░░██║░░░██║░░██║███████╗██║░░██║
-### ╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝
+##### ░█████╗░████████╗██╗░░██╗███████╗██████╗░
+##### ██╔══██╗╚══██╔══╝██║░░██║██╔════╝██╔══██╗
+##### ███████║░░░██║░░░███████║█████╗░░██████╔╝
+##### ██╔══██║░░░██║░░░██╔══██║██╔══╝░░██╔══██╗
+##### ██║░░██║░░░██║░░░██║░░██║███████╗██║░░██║
+##### ╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝
 
 Ather adalah game RPG yang dibuat di dalam bahasa c dengan menggunakan library ncurses
 

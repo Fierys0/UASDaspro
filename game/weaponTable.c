@@ -41,3 +41,19 @@ struct weaponData weapon[] = {
     {"Primal Crimson", 65, 0.15f, 1.60f, 2, 0, "Ultimate flame sword with crimson energy", 5000},
     {"Primal Tempest", 68, 0.14f, 1.70f, 3, 0, "Ultimate wind sword with tempest force", 5000}
 };
+
+void sortWeaponsByPrice() {
+    int size = sizeof(weapon) / sizeof(weapon[0]);
+
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = i + 1; j < size; j++) {
+            if (weapon[i].price > weapon[j].price) {
+                struct weaponData temp = weapon[i];
+                weapon[i] = weapon[j];
+                weapon[j] = temp;
+            }
+        }
+    }
+}
+
+

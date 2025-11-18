@@ -8,12 +8,11 @@ extern void inputDebugMessage(const char *messageString, ...);
 extern void debugMenuInput(int usrInput);
 extern bool isDebug;
 extern int mainBoxLimit;
-extern void matrixAnimationNcurses(WINDOW* win, const char* stringData, int startX, unsigned int characterDelay, unsigned int textDelay);
 int onGrass = 0;
 extern WINDOW * textHud;
 extern void clearTextHud();
-
-void battleStart();
+extern void matrixAnimationNcurses(WINDOW* win, int startX, unsigned int characterDelay, unsigned int textDelay, const char* stringData, ...);
+extern void battleStart();
 
 void onGrassEvent(WINDOW *game, char **map)
 {
@@ -24,12 +23,10 @@ void onGrassEvent(WINDOW *game, char **map)
     inputDebugMessage("randEn: %d", randomEncounter);
     if (randomEncounter == 1)
     {
-      struct entityData enemy;
-      enemy = randomBattle;
       clearTextHud();
       matrixAnimationNcurses(textHud, 1, 1500, 1500, "Sesuatu mendekat!");
       usleep(1500000);
-      battleStart(player, enemy);
+      battleStart();
     }
     drawMainScreen();
     for (int i = 0; i < 29; i++) {
