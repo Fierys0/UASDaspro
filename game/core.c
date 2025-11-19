@@ -173,7 +173,7 @@ bool enemyAttackFunc(struct Player* player, struct entityData* enemy)
     int playerMaxHealth = player->maxHealth;
 
     playerHealthBar = drawBar(playerHealth, playerMaxHealth);
-    matrixAnimationNcurses(textHud, 1, 1500, 1500,
+    matrixAnimationNcurses(textHud, 1, 1, 1,
         "%s menyerang %s (DMG: %d)", enemy->name, player->name, finalDamage);
 
     drawPlayerHud();
@@ -222,14 +222,14 @@ bool playerAttackFunc(struct Player* player, struct entityData* enemy)
     wrefresh(enemyHealthHud);
     drawHealthUI(*enemy);
 
-    matrixAnimationNcurses(textHud, 1, 1500, 1500,
+    matrixAnimationNcurses(textHud, 1, 1, 1,
         "%s menyerang %s (DMG: %d)", player->name, enemy->name, finalDamage);
 
     drawPlayerHud();
     napms(1000);
 
     if (enemy->health == 0) {
-        matrixAnimationNcurses(textHud, 1, 1500, 1500, "%s defeated!\n", enemy->name);
+        matrixAnimationNcurses(textHud, 1, 1, 1, "%s defeated!\n", enemy->name);
         napms(1000);
         battleEnd(player, enemy);
         napms(1000);
@@ -257,14 +257,14 @@ bool playerAttackSkill(struct Player* player, struct entityData* enemy, int skil
     wrefresh(enemyHealthHud);
     drawHealthUI(*enemy);
 
-    matrixAnimationNcurses(textHud, 1, 1500, 1500,
+    matrixAnimationNcurses(textHud, 1, 1, 1,
         "%s menyerang %s (DMG: %d)", player->name, enemy->name, finalDamage);
 
     drawPlayerHud();
     napms(1000);
 
     if (enemy->health == 0) {
-        matrixAnimationNcurses(textHud, 1, 1500, 1500, "%s defeated!\n", enemy->name);
+        matrixAnimationNcurses(textHud, 1, 1, 1, "%s defeated!\n", enemy->name);
         napms(1000);
         battleEnd(player, enemy);
         napms(1000);
@@ -303,13 +303,13 @@ void playerRest(struct Player *player)
   char *playerName = player->name;
   if (player->money < 5)
   {
-    matrixAnimationNcurses(textHud, 1, 1500, 1500, "Duit kamu kurang!");
+    matrixAnimationNcurses(textHud, 1, 1, 1, "Duit kamu kurang!");
     napms(300);
     return;
   }
   player->money -= 5;
   player->health = player->maxHealth;
-  matrixAnimationNcurses(textHud, 1, 1500, 1500, "%s beristirahat!", playerName);
+  matrixAnimationNcurses(textHud, 1, 10, 10, "%s beristirahat!", playerName);
   napms(300);
 }
 
@@ -322,9 +322,14 @@ void battleDefend(struct Player *player, struct entityData *enemy)
         addStatus(enemy, STUN);
         return;
     }
+    flashWindow(playerhud, 3, 150, 0);
     int parriedAttack = enemyAttack * 0.6;
     player->health = player->health - parriedAttack;
-    matrixAnimationNcurses(textHud, 1, 1500, 1500, "berhasil menangkis (damage ditangkis: %d)", parriedAttack);
+    int playerHealth = player->health;
+    int playerMaxHealth = player->maxHealth;
+    playerHealthBar = drawBar(playerHealth, playerMaxHealth);
+    drawPlayerHud();
+    matrixAnimationNcurses(textHud, 1, 1, 1, "berhasil menangkis (damage ditangkis: %d)", parriedAttack);
 }
 
 // Rekursi
@@ -337,6 +342,7 @@ int skillChargeAttack(struct Player* player, struct entityData* enemy, int baseD
   if (turn){
     turn--;
     enemyAttackFunc(player, enemy);
+    if (player->health <= 0) gameOver();
     return skillChargeAttack(player, enemy, totalDamage, turn);
   }
   else {
@@ -361,8 +367,8 @@ void battleEnd(struct Player* player, struct entityData* enemy) {
       player->health = player->maxHealth;
     }
 
-    matrixAnimationNcurses(textHud, 1, 1500, 1500, "%s defeated %s!\n", player->name, enemy->name);
-    matrixAnimationNcurses(textHud, 1, 1500, 1500, "Gained %d EXP and %d Money!\n", expGain, moneyGain);
+    matrixAnimationNcurses(textHud, 1, 1, 1, "%s defeated %s!\n", player->name, enemy->name);
+    matrixAnimationNcurses(textHud, 1, 1, 1, "Gained %d EXP and %d Money!\n", expGain, moneyGain);
     enemyHealthBar = "[##########]";
     expBar = drawBar(player->exp, levelUP);
     
@@ -443,7 +449,7 @@ void mainMenu(struct Player player) {
 }
 
 void gameOver() {
-    matrixAnimationNcurses(textHud, 1, 1500, 1500, "GAME OVER!");
+    matrixAnimationNcurses(textHud, 1, 10, 10, "GAME OVER!");
     usleep(100000);
     getch();
     endwin();
@@ -461,7 +467,7 @@ void savePlayer(struct Player *player)
 
     fclose(f);
 
-    matrixAnimationNcurses(textHud, 1, 1500, 1500, "Game saved!");
+    matrixAnimationNcurses(textHud, 1, 10, 10, "Game saved!");
     napms(300);
 }
 
@@ -474,7 +480,7 @@ void loadPlayer(struct Player *player)
 
     fclose(f);
 
-    matrixAnimationNcurses(textHud, 1, 1500, 1500, "Game loaded!");
+    matrixAnimationNcurses(textHud, 1, 10, 10, "Game loaded!");
     draw_all();
 }
 

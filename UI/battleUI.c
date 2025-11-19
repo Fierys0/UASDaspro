@@ -72,7 +72,7 @@ void matrixAnimationNcurses(WINDOW* win, int startX, unsigned int characterDelay
             char randChar = (char)((rand() % 94) + 33);
             mvwprintw(win, mainboxLimit, startX + out_len, "%c", randChar);
             wrefresh(win);
-            usleep(characterDelay);
+            napms(characterDelay);
         }
 
         // Reveal real char
@@ -81,7 +81,7 @@ void matrixAnimationNcurses(WINDOW* win, int startX, unsigned int characterDelay
 
         mvwprintw(win, mainboxLimit, startX, "%s", output);
         wrefresh(win);
-        usleep(textDelay);
+        napms(textDelay);
     }
 
     mainboxLimit++;

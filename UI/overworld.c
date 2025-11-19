@@ -24,7 +24,7 @@ void onGrassEvent(WINDOW *game, char **map)
     if (randomEncounter == 1)
     {
       clearTextHud();
-      matrixAnimationNcurses(textHud, 1, 1500, 1500, "Sesuatu mendekat!");
+      matrixAnimationNcurses(textHud, 1, 10, 10, "Sesuatu mendekat!");
       usleep(1500000);
       battleStart();
     }
