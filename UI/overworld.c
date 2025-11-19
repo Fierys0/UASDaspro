@@ -35,12 +35,12 @@ void onGrassEvent(WINDOW *game, char **map)
     for (int x = 1; x < 70 - 1; x++){
       attron(COLOR_PAIR(4));
       mvwaddch(game, 1, x, '-');
-      attron(COLOR_PAIR(4));
+      attroff(COLOR_PAIR(4));
       wrefresh(game);
     }
     attron(COLOR_PAIR(4));
     mvwprintw(game, 1, (70 / 2) - 5, "---EXIT---");
-    attron(COLOR_PAIR(4));
+    attroff(COLOR_PAIR(4));
 
     wrefresh(game);
     keypad(game, TRUE);

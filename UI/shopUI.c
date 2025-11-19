@@ -1,6 +1,9 @@
-WINDOW * shopHud;
-void openWeaponShop();
-void openArmorShop();
+WINDOW * shopHud, * shopDescription;
+void openWeaponShop(struct Player *player);
+void openArmorShop(struct Player *player);
+void weaponDescription(int index);
+void armorDescription(int index);
+void clearShopDescription();
 
 extern WINDOW *debugHud, *playerhud, *mainScreen, *commandHud, *textHud, *debugMessageHud;
 extern void center_box(WINDOW *parent, WINDOW *child, int y_offset, int styley, int stylex);
@@ -8,20 +11,100 @@ extern void clearCommandHud(); extern void drawMainScreen();
 extern int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index));
 extern void printCenteredSprite(WINDOW *win, int start_y, const char **lines, int lineCount);
 
+int shopPageStart = 0;
+int shopItemsOnPage = 0;
+
+enum ShopType 
+{
+    SHOP_WEAPON,
+    SHOP_ARMOR
+};
+
+enum ShopType currentShopType = SHOP_WEAPON;
+
+void shopDescriptionWrapper(int localIndex)
+{
+    // If user is highlighting spacer / next / back / exit -> ignore
+    if (localIndex >= shopItemsOnPage)
+    {
+        clearShopDescription();
+        return;
+    }
+    int globalIndex = shopPageStart + localIndex;
+
+    if (currentShopType == SHOP_WEAPON)
+        weaponDescription(globalIndex);
+    else
+        armorDescription(globalIndex);
+}
+
+void drawShopUI()
+{
+    shopHud = newwin(9, 29, 0 ,0);
+    center_box(mainScreen, shopHud, 10, 0, 0);
+    mvwprintw(shopHud, 1, 1, shopSprite);
+    box(shopHud, 0, 0);
+    wrefresh(shopHud);
+}
+
+void clearShopUI()
+{
+    delwin(shopHud);
+    shopHud = newwin(9, 29, 0 ,0);
+    center_box(mainScreen, shopHud, 10, 0, 0);
+    wrefresh(shopHud);
+}
+
+void clearShopDescription()
+{
+    delwin(shopDescription);
+    shopDescription = newwin(7, 27, 0, 0);
+    center_box(mainScreen, shopDescription, 11, 32, 32);
+    wrefresh(shopDescription);
+}
+
+void weaponDescription(int index)
+{
+    clearShopUI();
+    delwin(shopDescription);
+    shopDescription = newwin(7, 27, 0, 0);
+    center_box(mainScreen, shopDescription, 11, 32, 32);
+    wattron(shopDescription, A_BOLD);
+    mvwprintw(shopDescription, 0, 0, "%s", weapon[index].name);
+    wattroff(shopDescription, A_BOLD);
+    mvwprintw(shopDescription, 1, 0, "%s", weapon[index].description);
+    mvwprintw(shopDescription, 5, 0, "atk:%d", weapon[index].damage);
+    mvwprintw(shopDescription, 5, 7, "spd:%d", weapon[index].speed);
+    mvwprintw(shopDescription, 6, 0, "Price:%d", weapon[index].price);
+    wrefresh(shopDescription);
+}
+
+void armorDescription(int index)
+{
+    clearShopUI();
+    delwin(shopDescription);
+    shopDescription = newwin(7, 27, 0, 0);
+    center_box(mainScreen, shopDescription, 11, 32, 32);
+    wattron(shopDescription, A_BOLD);
+    mvwprintw(shopDescription, 0, 0, "%s", armor[index].name);
+    wattroff(shopDescription, A_BOLD);
+    mvwprintw(shopDescription, 1, 0, "%s", armor[index].description);
+    mvwprintw(shopDescription, 5, 0, "def:%d", armor[index].baseDefense);
+    mvwprintw(shopDescription, 5, 7, "res:%d", armor[index].resistance);
+    mvwprintw(shopDescription, 6, 0, "Price:%d", armor[index].price);
+    wrefresh(shopDescription);
+}
+
 void startShop()
 {
-  shopHud = newwin(9, 29, 0 ,0);
-  center_box(mainScreen, shopHud, 10, 0, 0);
-  mvwprintw(shopHud, 1, 1, shopSprite);
-  box(shopHud, 0, 0);
-  wrefresh(shopHud);
 
   char *shopChoices[] = {"Weapon", "Armor", "<< Back", NULL};
   while (1)
   {
+    drawShopUI();
     int choices = usrInputChoices(shopChoices, commandHud, 1, 1, NULL);
-    if (choices == 0) openWeaponShop();
-    if (choices == 1) openArmorShop();
+    if (choices == 0) openWeaponShop(&player);
+    if (choices == 1) openArmorShop(&player);
     if (choices == 2) break;
   }
 
@@ -30,192 +113,215 @@ void startShop()
   drawMainScreen();
 }
 
-void openArmorShop()
+void addWeaponToInventory(struct Player* player, int weaponIndex) 
 {
-    int totalArmors = sizeof(armor) / sizeof(armor[0]);
-    int page = 0;
-
-    while (1)
+    for (int i = 0; i < 255; i++) 
     {
-        clearCommandHud();
-        char *choices[32]; // enough space
-        int indexStart = page * 16;
-        int indexEnd = indexStart + 16;
-        if (indexEnd > totalArmors) indexEnd = totalArmors;
-
-        int count = 0;
-
-        // Add weapons
-        for (int i = indexStart; i < indexEnd; i++)
+        if (player->inventory[0][i] == -1) 
         {
-            choices[count] = armor[i].name;
-            count++;
-        }
-
-        // Insert spacer line
-        choices[count] = " ";
-        int spacerIndex = count;
-        count++;
-
-        // Add "Next >>" if more pages
-        bool hasNext = (indexEnd < totalArmors);
-        int nextIndex = -1;
-        if (hasNext)
-        {
-            choices[count] = "Next >>";
-            nextIndex = count;
-            count++;
-        }
-
-        // Add "<< Back" if not on first page
-        bool hasBack = (page > 0);
-        int backIndex = -1;
-        if (hasBack)
-        {
-            choices[count] = "<< Back";
-            backIndex = count;
-            count++;
-        }
-
-        // Add exit option
-        int exitIndex = count;
-        choices[count] = "Exit Shop";
-        count++;
-
-        // terminate for usrInputChoices()
-        choices[count] = NULL;
-
-        // ask user
-        int selected = usrInputChoices(choices, commandHud, 1, 1, NULL);
-
-        // ---------------------------------------------
-        // interprets selection
-        // ---------------------------------------------
-
-        // If user clicked on a weapon
-        if (selected < (indexEnd - indexStart))
-        {
-            // int weaponIndex = indexStart + selected;
-            // showWeaponDetails(weaponIndex); // you implement
-            // continue;
-        }
-
-        // Spacer line → ignore
-        if (selected == spacerIndex)
-            continue;
-
-        // Next page
-        if (hasNext && selected == nextIndex)
-        {
-            page++;
-            continue;
-        }
-
-        // Back page
-        if (hasBack && selected == backIndex)
-        {
-            page--;
-            continue;
-        }
-
-        // Exit
-        if (selected == exitIndex)
-            clearCommandHud();
+            player->inventory[0][i] = weaponIndex;
             return;
+        }
     }
 }
 
-void openWeaponShop()
+void equipWeapon(struct Player* player, int weaponIndex) 
 {
-    int totalWeapons = sizeof(weapon) / sizeof(weapon[0]);
+    player->weapon = weapon[weaponIndex];
+}
+
+void addArmorToInventory(struct Player* player, int armorIndex) 
+{
+    for (int i = 0; i < 255; i++) 
+    {
+        if (player->inventory[1][i] == -1) 
+        {
+            player->inventory[1][i] = armorIndex;
+            return;
+        }
+    }
+}
+
+void equipArmor(struct Player* player, int armorIndex) 
+{
+    player->armor = armor[armorIndex];
+}
+
+void initInventory(struct Player* player) 
+{
+    for (int i = 0; i < 255; i++) 
+    {
+        player->inventory[0][i] = -1; // weapons
+        player->inventory[1][i] = -1; // armors
+    }
+}
+
+void openWeaponShop(struct Player* player)
+{
+    currentShopType = SHOP_WEAPON;
+
+    int totalItems = sizeof(weapon) / sizeof(weapon[0]);
     int page = 0;
 
     while (1)
     {
         clearCommandHud();
-        char *choices[32]; // enough space
+
+        char *choices[32];
         int indexStart = page * 16;
-        int indexEnd = indexStart + 16;
-        if (indexEnd > totalWeapons) indexEnd = totalWeapons;
+        int indexEnd   = indexStart + 16;
+        if (indexEnd > totalItems) indexEnd = totalItems;
 
         int count = 0;
 
-        // Add weapons
+        // Weapon names
         for (int i = indexStart; i < indexEnd; i++)
-        {
-            choices[count] = weapon[i].name;
-            count++;
-        }
+            choices[count++] = weapon[i].name;
 
-        // Insert spacer line
-        choices[count] = " ";
+        // Store usable range for callback
+        shopPageStart = indexStart;
+        shopItemsOnPage = indexEnd - indexStart;
+
+        // Spacer
         int spacerIndex = count;
-        count++;
+        choices[count++] = "";
 
-        // Add "Next >>" if more pages
-        bool hasNext = (indexEnd < totalWeapons);
+        // Next
+        bool hasNext = (indexEnd < totalItems);
         int nextIndex = -1;
-        if (hasNext)
+        if (hasNext) 
         {
-            choices[count] = "Next >>";
             nextIndex = count;
-            count++;
+            choices[count++] = "Next >>";
         }
 
-        // Add "<< Back" if not on first page
+        // Back
         bool hasBack = (page > 0);
         int backIndex = -1;
-        if (hasBack)
+        if (hasBack) 
         {
-            choices[count] = "<< Back";
             backIndex = count;
-            count++;
-        }
-
-        // Add exit option
-        int exitIndex = count;
-        choices[count] = "Exit Shop";
-        count++;
-
-        // terminate for usrInputChoices()
-        choices[count] = NULL;
-
-        // ask user
-        int selected = usrInputChoices(choices, commandHud, 1, 1, NULL);
-
-        // ---------------------------------------------
-        // interprets selection
-        // ---------------------------------------------
-
-        // If user clicked on a weapon
-        if (selected < (indexEnd - indexStart))
-        {
-            // int weaponIndex = indexStart + selected;
-            // showWeaponDetails(weaponIndex); // you implement
-            // continue;
-        }
-
-        // Spacer line → ignore
-        if (selected == spacerIndex)
-            continue;
-
-        // Next page
-        if (hasNext && selected == nextIndex)
-        {
-            page++;
-            continue;
-        }
-
-        // Back page
-        if (hasBack && selected == backIndex)
-        {
-            page--;
-            continue;
+            choices[count++] = "<< Back";
         }
 
         // Exit
-        if (selected == exitIndex)
+        int exitIndex = count;
+        choices[count++] = "Exit Shop";
+
+        choices[count] = NULL;
+
+        int selected = usrInputChoices(choices, commandHud, 1, 1,shopDescriptionWrapper);
+
+        // Select weapon
+        if (selected < shopItemsOnPage)
+        {
+            int itemIndex = indexStart + selected;
+            int price = weapon[itemIndex].price;
+
+            if (player->money >= price) 
+            {
+                player->money -= price;
+                addWeaponToInventory(player, itemIndex);
+                equipWeapon(player, itemIndex);
+            } else {
+                matrixAnimationNcurses(textHud, 1, 1, 1, "Uangmu tidak cukup");
+            }
+
+            continue;
+        }
+
+        if (selected == spacerIndex) continue;
+        if (hasNext && selected == nextIndex) { page++; continue; }
+        if (hasBack && selected == backIndex) { page--; continue; }
+
+        if (selected == exitIndex) 
+        {
             clearCommandHud();
             return;
+        }
+    }
+}
+
+void openArmorShop(struct Player* player)
+{
+    currentShopType = SHOP_ARMOR;
+
+    int totalItems = sizeof(armor) / sizeof(armor[0]);
+    int page = 0;
+
+    while (1)
+    {
+        clearCommandHud();
+
+        char *choices[32];
+        int indexStart = page * 16;
+        int indexEnd   = indexStart + 16;
+        if (indexEnd > totalItems) indexEnd = totalItems;
+
+        int count = 0;
+
+        // Armor names
+        for (int i = indexStart; i < indexEnd; i++)
+            choices[count++] = armor[i].name;
+
+        // Store range for callback
+        shopPageStart = indexStart;
+        shopItemsOnPage = indexEnd - indexStart;
+
+        // Spacer
+        int spacerIndex = count;
+        choices[count++] = "";
+
+        // Next
+        bool hasNext = (indexEnd < totalItems);
+        int nextIndex = -1;
+        if (hasNext) {
+            nextIndex = count;
+            choices[count++] = "Next >>";
+        }
+
+        // Back
+        bool hasBack = (page > 0);
+        int backIndex = -1;
+        if (hasBack) 
+        {
+            backIndex = count;
+            choices[count++] = "<< Back";
+        }
+
+        // Exit
+        int exitIndex = count;
+        choices[count++] = "Exit Shop";
+
+        choices[count] = NULL;
+
+        int selected = usrInputChoices(choices, commandHud, 1, 1, shopDescriptionWrapper);
+
+        // ----- Selected armor -----
+        if (selected < shopItemsOnPage)
+        {
+            int itemIndex = indexStart + selected;
+            int price = armor[itemIndex].price;
+
+            if (player->money >= price) {
+                player->money -= price;
+                addArmorToInventory(player, itemIndex);
+                equipArmor(player, itemIndex);
+            } else {
+                matrixAnimationNcurses(textHud, 1, 1, 1, "Uangmu tidak cukup");
+            }
+
+            continue;
+        }
+
+        if (selected == spacerIndex) continue;
+        if (hasNext && selected == nextIndex) { page++; continue; }
+        if (hasBack && selected == backIndex) { page--; continue; }
+
+        if (selected == exitIndex) 
+        {
+            clearCommandHud();
+            return;
+        }
     }
 }
