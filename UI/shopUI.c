@@ -364,7 +364,7 @@ void openArmorShop(struct Player* player)
         for (int i = indexStart; i < indexEnd; i++)
             choices[count++] = armor[i].name;
 
-        // Store range for callback
+        // Callback
         shopPageStart = indexStart;
         shopItemsOnPage = indexEnd - indexStart;
 
@@ -413,7 +413,7 @@ void openArmorShop(struct Player* player)
         continue;
         }
 
-        // ----- Selected armor -----
+        // Selected armor
         if (selected < shopItemsOnPage)
         {
             int itemIndex = indexStart + selected;

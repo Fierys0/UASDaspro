@@ -51,9 +51,9 @@ void generateMap(char **map, int h, int w)
 {
     for (int y = 0; y < h; y++)
         for (int x = 0; x < w; x++)
-            map[y][x] = (rand() % 5 == 0) ? 'W' : '.'; // grass (W) or dirt
+            map[y][x] = (rand() % 5 == 0) ? 'W' : '.'; // grass (W) or dirt (.)
 
-    // create some random water patches for variety
+    // random water because why not
     for (int c = 0; c < 5; c++)
     {
         int gx = rand() % (w - 5);
@@ -84,7 +84,6 @@ int overworldStart(WINDOW *game)
 
     generateMap(map, boxHeight - 2, boxWidth - 2);
 
-    // Draw border box
     box(game, 0, 0);
 
     // Draw map content

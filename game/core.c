@@ -42,7 +42,6 @@ int effectLength = sizeof(effectList) / sizeof(effectList[0]);
 int borderWidth = 40;
 int borderHeight = 5;
 
-// ---------- Function Declarations ----------
 void matrixAnimation(const char* stringData, unsigned int characterDelay, unsigned int textDelay);
 void drawHealth(int health, int maxHealth);
 void battleUI(struct Player player, struct entityData enemy);

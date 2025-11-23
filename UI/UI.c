@@ -40,14 +40,14 @@ void flashWindow(WINDOW *win, int flashes, int delay, int borderstyle)
 
     for (int i = 0; i < flashes; i++)
     {
-        // ----- Reverse border -----
+        // Reverse border
         wattron(win, A_REVERSE);
         box(win, borderstyle, borderstyle);
         wattroff(win, A_REVERSE);
         wrefresh(win);
         napms(delay);
 
-        // ----- Normal border -----
+        // Normal border
         box(win, borderstyle, borderstyle);
         wrefresh(win);
         napms(delay);
@@ -113,13 +113,11 @@ char* userInput(WINDOW *win, const char *question)
 
     int pos = 0;
 
-    // Draw UI
     werase(win);
     box(win, 0, 0);
     mvwprintw(win, 1, 2, "%s", question);
 
-    // Input box visuals
-    mvwprintw(win, 3, 2, "[              ]"); // 14 spaces
+    mvwprintw(win, 3, 2, "[              ]");
     wmove(win, 3, 3);
     wrefresh(win);
 
@@ -209,17 +207,15 @@ void center_box(WINDOW *parent, WINDOW *child, int y_offset, int styley, int sty
     int child_h, child_w;
     int starty, startx;
 
-    // Get parent's position and size
+    // untuk ngukur tengah harus ambil ukuran parent dan child
     getbegyx(parent, parent_y, parent_x);
     getmaxyx(parent, parent_h, parent_w);
-
-    // Get child's size
     getmaxyx(child, child_h, child_w);
 
-    // Center horizontally inside parent
+    // di center
     startx = parent_x + (parent_w - child_w) / 2;
 
-    // Optionally offset vertically relative to parent's top
+    // offset sesuai parameter
     starty = y_offset;
 
     // Move and redraw the child
@@ -227,7 +223,6 @@ void center_box(WINDOW *parent, WINDOW *child, int y_offset, int styley, int sty
     werase(child);
     box(child, styley, stylex);
 
-    // Refresh order: parent first, then child
     wrefresh(parent);
     wrefresh(child);
 }
@@ -379,7 +374,6 @@ void draw_all()
 
 int exitMenu()
 {
-    // Disable keypad for main window to avoid input conflict
     keypad(lastKeypad, FALSE);
 
     // Create popup window
@@ -445,7 +439,7 @@ int exitMenu()
             delwin(exitHud);
             keypad(lastKeypad, TRUE);
             drawMainScreen(); drawCommandHud();
-            return 0; // Treat ESC as "No"
+            return 0;
         }
 
         default:
@@ -524,7 +518,7 @@ int mainUI()
             loadPlayer(&player);
             break;
         }
-        if (choice == -1) break; // ESC pressed
+        if (choice == -1) break;
     }
 
     endwin();

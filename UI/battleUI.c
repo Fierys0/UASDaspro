@@ -38,7 +38,6 @@ int mainboxLimit = 1;
 
 void matrixAnimationNcurses(WINDOW* win, int startX, unsigned int characterDelay, unsigned int textDelay, const char* stringData, ...)
 {
-    // Reset / recreate window if needed
     if (mainboxLimit > 4)
     {
         mainboxLimit = 1;
@@ -49,7 +48,6 @@ void matrixAnimationNcurses(WINDOW* win, int startX, unsigned int characterDelay
         wrefresh(textHud);
     }
 
-    // Format the variadic string first
     char formatted[2048];
 
     va_list args;
@@ -67,7 +65,6 @@ void matrixAnimationNcurses(WINDOW* win, int startX, unsigned int characterDelay
     for (int i = 0; i < len; i++) {
         char realChar = formatted[i];
 
-        // Flicker animation
         for (int j = 0; j < 15; j++) {
             char randChar = (char)((rand() % 94) + 33);
             mvwprintw(win, mainboxLimit, startX + out_len, "%c", randChar);
@@ -75,7 +72,6 @@ void matrixAnimationNcurses(WINDOW* win, int startX, unsigned int characterDelay
             napms(characterDelay);
         }
 
-        // Reveal real char
         output[out_len++] = realChar;
         output[out_len] = '\0';
 
@@ -121,7 +117,7 @@ void drawEnemySprite(struct entityData enemy)
 {
     enemySprite = newwin(14, 31, 0, 0);
     center_box(mainScreen, enemySprite, 12, 0, 0);
-    mvwaddstr(enemySprite, 1, 0, enemy.enemySprite); // <-- use mvwaddstr, not mvwprintw
+    mvwaddstr(enemySprite, 1, 0, enemy.enemySprite);
     wrefresh(enemySprite);
 }
 
@@ -129,7 +125,6 @@ void battleStart()
 {
     mvwprintw(mainScreen, 1, 0, "%s", battleBG);
     wrefresh(mainScreen);
-    // Draw the sprite safely
 
     struct entityData enemy;
     enemy = randomBattle();
