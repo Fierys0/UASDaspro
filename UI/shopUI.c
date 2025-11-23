@@ -200,6 +200,9 @@ void addWeaponToInventory(struct Player* player, int weaponIndex)
 
 void equipWeapon(struct Player* player, int weaponIndex) 
 {
+    char* playerWeaponBefore = player->weapon.name;
+    char* playerWeaponAfter = weapon[weaponIndex].name;
+    inputDebugMessage("%s -> %s", playerWeaponBefore, playerWeaponAfter);
     player->weapon = weapon[weaponIndex];
 }
 
@@ -217,6 +220,9 @@ void addArmorToInventory(struct Player* player, int armorIndex)
 
 void equipArmor(struct Player* player, int armorIndex) 
 {
+    char* playerArmorBefore = player->armor.name;
+    char* playerArmorAfter = armor[armorIndex].name;
+    inputDebugMessage("%s -> %s", playerArmorBefore, playerArmorAfter);
     player->armor = armor[armorIndex];
 }
 

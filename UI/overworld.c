@@ -13,6 +13,7 @@ extern WINDOW * textHud;
 extern void clearTextHud();
 extern void matrixAnimationNcurses(WINDOW* win, int startX, unsigned int characterDelay, unsigned int textDelay, const char* stringData, ...);
 extern void battleStart();
+extern void clearMainScreen();
 
 void onGrassEvent(WINDOW *game, char **map)
 {
@@ -28,7 +29,7 @@ void onGrassEvent(WINDOW *game, char **map)
       usleep(1500000);
       battleStart();
     }
-    drawMainScreen();
+    // clearMainScreen();
     for (int i = 0; i < 29; i++) {
       mvwprintw(game, i + 1, 1, "%s", map[i]);
     }
@@ -114,7 +115,7 @@ int overworldStart(WINDOW *game)
     {
         ch = wgetch(game);
 
-        // Restore old tile
+        // Restore tile lama
         mvwaddch(game, py, px, map[py - 1][px - 1]);
         debugMenuInput(ch);
 
@@ -139,7 +140,7 @@ int overworldStart(WINDOW *game)
         default:
             break;
         }
-        // Exit if touching the banner
+        // jika keluar
         if (py == 1)
         {
             mvwprintw(game, 0, 2, "[Exiting overworld...]");
@@ -148,16 +149,18 @@ int overworldStart(WINDOW *game)
             break;
         }
 
-        // Trigger grass event
+        // jika menyentuh grass
         if (map[py - 1][px - 1] == 'W')
         {
           keypad(game, FALSE);
+          inputDebugMessage("x: %d y: %d", px, py);
           onGrassEvent(game, map);
         }
 
-        // Draw player
+        // draw player
         mvwaddch(game, py, px, '@');
         wrefresh(game);
+        inputDebugMessage("x: %d y: %d", px, py);
     }
 
 exit_overworld:

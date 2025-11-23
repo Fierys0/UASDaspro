@@ -15,7 +15,9 @@ int debugPosition = 1;
 int debugMessagePosition = 1;
 WINDOW * lastKeypad;
 
-WINDOW *debugHud, *playerhud, *mainScreen, *commandHud, *textHud, *debugMessageHud, *inputUser;
+WINDOW *debugHud, *playerhud, *mainScreen, 
+       *commandHud, *textHud, *debugMessageHud, 
+       *inputUser, *debugCheat;
 
 int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index), bool isExtraKey);
 void debugMenuInput(int usrInput);
@@ -88,7 +90,7 @@ WINDOW *debugMenu()
 
 void drawDebugInput()
 {
-  debugHud = newwin(11, 20, 26, 102);
+  debugHud = newwin(11, 24, 26, 102);
   box(debugHud, 0, 0);
   mvwprintw(debugHud, 0, 1, "Debug Input");
   wrefresh(debugHud);
@@ -96,7 +98,7 @@ void drawDebugInput()
 
 void drawDebugMessage()
 {
-  debugMessageHud = newwin(26, 20, 0 , 102);
+  debugMessageHud = newwin(26, 24, 0 , 102);
   box(debugMessageHud, 0, 0);
   mvwprintw(debugMessageHud, 0, 1, "Debug Messages");
   wrefresh(debugMessageHud);
@@ -152,6 +154,27 @@ char* userInput(WINDOW *win, const char *question)
     return buffer;
 }
 
+void debugCheatMenu()
+{
+  debugCheat = newwin(5, 22, 0, 0);
+  center_box(mainScreen, debugCheat, 13, 0, 0);
+  mvwprintw(debugCheat, 0, 1, "Cheat(s)");
+  wrefresh(debugCheat);
+  char* strChoices[] = {"Max LVL and Gold", "Exit", NULL};
+  while (1)
+  {
+    int choice = usrInputChoices(strChoices, debugCheat, 1, 1, NULL, false);
+
+    if (choice == 0) 
+    {
+      player.money = 9999999;
+      player.level = 99;
+      break;
+    } else if (choice == 1) break;
+  }
+  delwin(debugCheat);
+  draw_all();
+}
 
 void inputDebugMessage(const char *messageString, ...)
 {
@@ -221,6 +244,14 @@ void clearTextHud()
   drawTextHud();
 }
 
+void clearMainScreen()
+{
+  delwin(mainScreen);
+  mainScreen = newwin(31, 70, 0, 31);
+  box(mainScreen, 0, 0);
+  wrefresh(mainScreen);
+}
+
 int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index), bool isExtraKey)
 {
     keypad(win, TRUE);
@@ -237,6 +268,7 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, voi
       highlight = shopForceHighlight;
       shopForceHighlight = -1;
     }
+
     while (1)
     {
         flushinp();
@@ -263,6 +295,7 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, voi
                 break;
             case 10: // Enter
                 flushinp();
+                debugMenuInput(usrInput);
                 return highlight;
             case 27: // ESC
                 lastKeypad = commandHud;
@@ -280,6 +313,7 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, voi
         }
 
         flushinp();
+        inputDebugMessage("hl: %d (%s)", highlight, strChoices[highlight]);
         debugMenuInput(usrInput);
         if (highlight != oldHighlight && onHighlight)
             onHighlight(highlight);
@@ -295,7 +329,7 @@ void drawPlayerHud()
     mvwprintw(playerhud, 2, 1, "[%s]", player.name);
     mvwprintw(playerhud, 3, 1, "LV %d", player.level);
     mvwprintw(playerhud, 4, 1, "HP %s | %d/%d", playerHealthBar, player.health, player.maxHealth);
-    mvwprintw(playerhud, 5, 1, "EXP %s | %d/%d", expBar, player.exp, (int)((float)baseEXPUP * player.level * 1.15));
+    mvwprintw(playerhud, 5, 1, "EXP %s | %d/%d", expBar, player.exp, levelUP);
     mvwprintw(playerhud, 6, 1, "Gold: %d", player.money);
     mvwprintw(playerhud, 7, 1, "Def: %d Agi: %d", player.defensePoint, player.agilityPoint);
     mvwprintw(playerhud, 8, 1, "Status Effect: None");
@@ -432,8 +466,6 @@ void handle_resize(int sig)
 
 int mainUI()
 {
-    setlocale(LC_ALL, "");
-    initscr();
     set_escdelay(25);
     noecho();
     curs_set(0);
@@ -454,6 +486,8 @@ int mainUI()
     sortArmorsByPrice();
     sortWeaponsByPrice();
 
+    levelUP = (int)((float)(baseEXPUP * player.level * 1.50));
+
     char *menuChoices[] = {"Explore", "Shop", "Rest (5 Gold)", "Save", "Load", NULL};
     debugMenu();
     inputDebugMessage("Program Init");
@@ -464,11 +498,14 @@ int mainUI()
 ;
         drawPlayerHud();
 
-        int choice = usrInputChoices(menuChoices, commandHud, 1, 1, NULL, false);
+        int choice = usrInputChoices(menuChoices, commandHud, 1, 1, NULL, true);
+        if (choice == 47) 
+          if(isDebug) debugCheatMenu();
         switch (choice)
         {
           case 0:
             clearCommandHud();
+            clearMainScreen();
             overworldStart(mainScreen);
             drawMainScreen();
             break;

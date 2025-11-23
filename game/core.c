@@ -32,6 +32,7 @@ extern void drawEnemySprite(struct entityData enemy);
 extern char* enemyHealthBar;
 extern char* playerHealthBar;
 extern char* expBar;
+extern void inputDebugMessage(const char *messageString, ...);
 
 int baseEXPUP = 65;
 int levelUP;
@@ -97,6 +98,7 @@ void drawHealth(int health, int maxHealth)
 
 char* drawBar(int health, int maxHealth)
 {
+    inputDebugMessage("Drawing bar (%d)(%d)", health, maxHealth);
     int totalBars = 10;
 
     if (maxHealth <= 0)
@@ -141,9 +143,9 @@ void battleUI(struct Player player, struct entityData enemy)
 
 bool enemyAttackFunc(struct Player* player, struct entityData* enemy)
 {
-
     int playerDamage = player->baseDamage + player->weapon.damage;
     int enemyDamage = enemy->baseDamage + enemy->weapon.damage;
+    inputDebugMessage("base enm dmg: %d", enemyDamage);
 
     for (int i = 0; i <= 3; i++)
     {
@@ -156,15 +158,24 @@ bool enemyAttackFunc(struct Player* player, struct entityData* enemy)
         }
     }
 
-    bool isPlayerCrit = ((float)rand() / RAND_MAX) < player->weapon.critRate;
-    bool isEnemyCrit = ((float)rand() / RAND_MAX) < enemy->weapon.critRate;
+    bool isPlayerCrit = (1 + rand() % 100) < (player->weapon.critRate * 100);
+    bool isEnemyCrit = (1 + rand() % 100) < (enemy->weapon.critRate* 100);
+    inputDebugMessage("enemy cr: %d", isEnemyCrit);
 
     if (isPlayerCrit)
-        playerDamage = (int)(playerDamage * player->weapon.critDamage);
+    {
+        playerDamage = (int)(playerDamage * player->weapon.critDamage) + 5;
+        inputDebugMessage("Player Crit");
+    }
     if (isEnemyCrit)
-        enemyDamage = (int)(enemyDamage * enemy->weapon.critDamage);
+    {
+        enemyDamage = (int)(enemyDamage * enemy->weapon.critDamage) + 5;
+        inputDebugMessage("crit: %d", enemyDamage);
+        inputDebugMessage("Enemy Crit");
+    }
 
     int finalDamage = enemyDamage - player->armor.baseDefense;
+    inputDebugMessage("final dmg: %d", finalDamage);
     if (finalDamage < 0) finalDamage = 0;
 
     player->health -= finalDamage;
@@ -190,6 +201,7 @@ bool enemyAttackFunc(struct Player* player, struct entityData* enemy)
 bool playerAttackFunc(struct Player* player, struct entityData* enemy)
 {
     int playerDamage = player->baseDamage * player->level + player->weapon.damage;
+    inputDebugMessage("base plyr dmg: %d", playerDamage);
     int enemyDamage = enemy->baseDamage + enemy->weapon.damage;
 
     for (int i = 0; i <= 3; i++)
@@ -203,15 +215,25 @@ bool playerAttackFunc(struct Player* player, struct entityData* enemy)
         }
     }
 
-    bool isPlayerCrit = ((float)rand() / RAND_MAX) < player->weapon.critRate;
-    bool isEnemyCrit = ((float)rand() / RAND_MAX) < enemy->weapon.critRate;
+    bool isPlayerCrit = (1 + rand() % 100) < (player->weapon.critRate * 100);
+    bool isEnemyCrit = (1 + rand() % 100) < (enemy->weapon.critRate* 100);
+
+    inputDebugMessage("plyr cr: %d", isPlayerCrit);
 
     if (isPlayerCrit)
-        playerDamage = (int)(playerDamage * player->weapon.critDamage);
+    {
+        playerDamage = (int)(playerDamage * player->weapon.critDamage) + 5;
+        inputDebugMessage("Player Crit");
+        inputDebugMessage("crit dmg: %s", playerDamage);
+    }
     if (isEnemyCrit)
-        enemyDamage = (int)(enemyDamage * enemy->weapon.critDamage);
+    {
+        enemyDamage = (int)(enemyDamage * enemy->weapon.critDamage) + 5;
+        inputDebugMessage("Enemy Crit");
+    }
 
     int finalDamage = playerDamage - enemy->defense;
+    inputDebugMessage("final dmg: %d", finalDamage);
     if (finalDamage < 0) finalDamage = 0;
 
     enemy->health -= finalDamage;
@@ -328,12 +350,14 @@ void battleDefend(struct Player *player, struct entityData *enemy)
     }
     flashWindow(playerhud, 3, 150, 0);
     int parriedAttack = enemyAttack * 0.6;
+    inputDebugMessage("base atk: %d", enemyAttack);
+    inputDebugMessage("dec atk: %d", parriedAttack);
     player->health = player->health - parriedAttack;
     int playerHealth = player->health;
     int playerMaxHealth = player->maxHealth;
     playerHealthBar = drawBar(playerHealth, playerMaxHealth);
     drawPlayerHud();
-    matrixAnimationNcurses(textHud, 1, 1, 1, "berhasil menangkis (damage ditangkis: %d)", parriedAttack);
+    matrixAnimationNcurses(textHud, 1, 1, 1, "berhasil menangkis (damage ditangkis: %d)", enemyAttack - parriedAttack);
 }
 
 // Rekursi
@@ -341,8 +365,9 @@ int skillChargeAttack(struct Player* player, struct entityData* enemy, int baseD
 {
   napms(150);
   srand(time(NULL));
-  int randomMultiply = 1 + rand() % 5;
+  int randomMultiply = 2 + rand() % 3;
   int totalDamage = baseDamage * randomMultiply;
+  inputDebugMessage("sdmg (x%d) %d t:%d", randomMultiply, totalDamage, turn);
   if (turn){
     turn--;
     enemyAttackFunc(player, enemy);
@@ -372,8 +397,8 @@ void battleEnd(struct Player* player, struct entityData* enemy)
       player->health = player->maxHealth;
     }
 
-    matrixAnimationNcurses(textHud, 1, 1, 1, "%s defeated %s!\n", player->name, enemy->name);
-    matrixAnimationNcurses(textHud, 1, 1, 1, "Gained %d EXP and %d Money!\n", expGain, moneyGain);
+    matrixAnimationNcurses(textHud, 1, 1, 1, "%s mengalahkan %s!\n", player->name, enemy->name);
+    matrixAnimationNcurses(textHud, 1, 1, 1, "Mendapat %d EXP dan %d Gold!\n", expGain, moneyGain);
     enemyHealthBar = "[##########]";
     expBar = drawBar(player->exp, levelUP);
     
@@ -464,11 +489,13 @@ void gameOver() {
 
 void savePlayer(struct Player *player)
 {
+    char *saveLocation = "save/save.dat";
     mkdir("save", 0777);
 
-    FILE *f = fopen("save/save.dat", "wb");
+    FILE *f = fopen(saveLocation, "wb");
     if (!f) return;
 
+    inputDebugMessage("save %s", saveLocation);
     fwrite(player, sizeof(struct Player), 1, f);
 
     fclose(f);
@@ -479,8 +506,10 @@ void savePlayer(struct Player *player)
 
 void loadPlayer(struct Player *player)
 {
-    FILE *f = fopen("save/save.dat", "rb");
+    char *loadLocation = "save/save.dat";
+    FILE *f = fopen(loadLocation, "rb");
     if (!f) return;
+    inputDebugMessage("load %s", loadLocation);
 
     fread(player, sizeof(struct Player), 1, f);
 
