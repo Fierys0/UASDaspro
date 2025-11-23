@@ -15,9 +15,9 @@ int debugPosition = 1;
 int debugMessagePosition = 1;
 WINDOW * lastKeypad;
 
-WINDOW *debugHud, *playerhud, *mainScreen, *commandHud, *textHud, *debugMessageHud;
+WINDOW *debugHud, *playerhud, *mainScreen, *commandHud, *textHud, *debugMessageHud, *inputUser;
 
-int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index));
+int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index), bool isExtraKey);
 void debugMenuInput(int usrInput);
 WINDOW *debugMenu();
 void draw_all();
@@ -102,8 +102,60 @@ void drawDebugMessage()
   wrefresh(debugMessageHud);
 }
 
+char* userInput(WINDOW *win, const char *question)
+{
+    int maxLen = 14;
+    char *buffer = malloc(maxLen + 1);
+    if (!buffer) return NULL;
+    memset(buffer, 0, maxLen + 1);
+
+    int pos = 0;
+
+    // Draw UI
+    werase(win);
+    box(win, 0, 0);
+    mvwprintw(win, 1, 2, "%s", question);
+
+    // Input box visuals
+    mvwprintw(win, 3, 2, "[              ]"); // 14 spaces
+    wmove(win, 3, 3);
+    wrefresh(win);
+
+    curs_set(1);
+    keypad(win, TRUE);
+
+    int ch;
+    while (1)
+    {
+        ch = wgetch(win);
+
+        if (ch == '\n' || ch == KEY_ENTER) {
+            break;
+        }
+        else if ((ch == KEY_BACKSPACE || ch == 127 || ch == 8) && pos > 0) {
+            pos--;
+            buffer[pos] = '\0';
+            mvwaddch(win, 3, 3 + pos, ' ');  // menghapus jika user backspace
+            wmove(win, 3, 3 + pos);
+        }
+        else if (ch >= 32 && ch <= 126 && pos < maxLen) {
+            buffer[pos] = ch;
+            mvwaddch(win, 3, 3 + pos, ch);
+            pos++;
+        }
+
+        wrefresh(win);
+    }
+
+    curs_set(0);
+    keypad(win, FALSE);
+    return buffer;
+}
+
+
 void inputDebugMessage(const char *messageString, ...)
 {
+    if (!isDebug || !debugMessageHud) return;
     va_list args;
     va_start(args, messageString);
 
@@ -169,7 +221,7 @@ void clearTextHud()
   drawTextHud();
 }
 
-int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index))
+int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index), bool isExtraKey)
 {
     keypad(win, TRUE);
     int highlight = 0;
@@ -180,6 +232,11 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, voi
     if (onHighlight)
         onHighlight(highlight);
 
+    if (shopForceHighlight >= 0)
+    {
+      highlight = shopForceHighlight;
+      shopForceHighlight = -1;
+    }
     while (1)
     {
         flushinp();
@@ -213,6 +270,11 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, voi
                 flushinp();
                 if (exitChoices == 1) {endwin(); exit(0);}
                 break;
+            case 47:
+                if (isExtraKey)
+                  return usrInput;
+                else
+                  break;
             default:
                 break;
         }
@@ -234,7 +296,7 @@ void drawPlayerHud()
     mvwprintw(playerhud, 3, 1, "LV %d", player.level);
     mvwprintw(playerhud, 4, 1, "HP %s | %d/%d", playerHealthBar, player.health, player.maxHealth);
     mvwprintw(playerhud, 5, 1, "EXP %s | %d/%d", expBar, player.exp, (int)((float)baseEXPUP * player.level * 1.15));
-    mvwprintw(playerhud, 6, 1, "Money: %d", player.money);
+    mvwprintw(playerhud, 6, 1, "Gold: %d", player.money);
     mvwprintw(playerhud, 7, 1, "Def: %d Agi: %d", player.defensePoint, player.agilityPoint);
     mvwprintw(playerhud, 8, 1, "Status Effect: None");
     mvwprintw(playerhud, 10, 1, "[Equipments]");
@@ -375,7 +437,6 @@ int mainUI()
     set_escdelay(25);
     noecho();
     curs_set(0);
-    cbreak();
     keypad(stdscr, TRUE);
     refresh();
     raw();
@@ -393,31 +454,38 @@ int mainUI()
     sortArmorsByPrice();
     sortWeaponsByPrice();
 
-    char *menuChoices[] = {"Explore", "Shop", "Rest", "Save", "Load", NULL};
+    char *menuChoices[] = {"Explore", "Shop", "Rest (5 Gold)", "Save", "Load", NULL};
     debugMenu();
     inputDebugMessage("Program Init");
     while (1)
     {
         playerHealthBar = drawBar(player.health, player.maxHealth);
-        expBar = drawBar(player.exp, (int)((float)baseEXPUP * player.level * 1.50));
+        expBar = drawBar(player.exp, levelUP);
+;
         drawPlayerHud();
 
-        int choice = usrInputChoices(menuChoices, commandHud, 1, 1, NULL);
-        if (choice == 0) 
+        int choice = usrInputChoices(menuChoices, commandHud, 1, 1, NULL, false);
+        switch (choice)
         {
-          clearCommandHud();
-          overworldStart(mainScreen);
-          drawMainScreen();
-        } else if (choice == 1){
-          clearCommandHud();
-          startShop();
-        } else if (choice == 2){
-          clearCommandHud();
-          playerRest(&player);
-        } else if (choice == 3){
-          savePlayer(&player);
-        } else if (choice == 4){
-          loadPlayer(&player);
+          case 0:
+            clearCommandHud();
+            overworldStart(mainScreen);
+            drawMainScreen();
+            break;
+          case 1:
+            clearCommandHud();
+            startShop();
+            break;
+          case 2:
+            clearCommandHud();
+            playerRest(&player);
+            break;
+          case 3:
+            savePlayer(&player);
+            break;
+          case 4:
+            loadPlayer(&player);
+            break;
         }
         if (choice == -1) break; // ESC pressed
     }

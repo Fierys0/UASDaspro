@@ -8,7 +8,7 @@ char* expBar = "[##########]";
 extern WINDOW * mainScreen, * textHud, *commandHud;
 extern bool isDebug;
 extern void center_box(WINDOW *parent, WINDOW *child, int y_offset, int styley, int stylex);
-extern int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index));
+extern int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index), bool isExtraKey);
 extern void debugMenuInput(int usrInput);
 extern WINDOW *debugMenu();
 extern void draw_all();
@@ -104,7 +104,7 @@ void skillUI(struct Player *player, struct entityData *enemy)
   char* choicesString[] = {"Charge Attack", "<< Back", NULL};
   while (1)
   {
-    int choices = usrInputChoices(choicesString, commandHud, 1, 1, NULL);
+    int choices = usrInputChoices(choicesString, commandHud, 1, 1, NULL, false);
     if (choices == 0) 
     {
       clearCommandHud();
@@ -141,7 +141,7 @@ void battleStart()
     char *battleChoices[] = {"Attack", "Defend", "Skill", "Item", "Run", NULL};
     while (player.health > 0 && enemy.health > 0)
     {
-      int choices = usrInputChoices(battleChoices, commandHud, 1, 1, NULL);
+      int choices = usrInputChoices(battleChoices, commandHud, 1, 1, NULL, false);
       if (choices == 0){
         clearCommandHud();
         battleAttack(&player, &enemy);

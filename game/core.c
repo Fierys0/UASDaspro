@@ -34,7 +34,7 @@ extern char* playerHealthBar;
 extern char* expBar;
 
 int baseEXPUP = 65;
-
+int levelUP;
 int effectList[] = {STUN};
 int effectLength = sizeof(effectList) / sizeof(effectList[0]);
 
@@ -53,7 +53,8 @@ void mainMenu(struct Player player);
 void gameOver();
 extern void draw_all();
 
-void matrixAnimation(const char* stringData, unsigned int characterDelay, unsigned int textDelay) {
+void matrixAnimation(const char* stringData, unsigned int characterDelay, unsigned int textDelay) 
+{
     srand(time(NULL));
     char output[1024] = "";
     int len = strlen(stringData);
@@ -77,7 +78,8 @@ void matrixAnimation(const char* stringData, unsigned int characterDelay, unsign
     printf("\n");
 }
 
-void drawHealth(int health, int maxHealth) {
+void drawHealth(int health, int maxHealth) 
+{
     const char healthSymbol[] = "#";
     const char healthEmptySymbol[] = "-";
     float healthPercent = (float)health / maxHealth;
@@ -121,7 +123,8 @@ char* drawBar(int health, int maxHealth)
     return result;
 }
 
-void battleUI(struct Player player, struct entityData enemy) {
+void battleUI(struct Player player, struct entityData enemy) 
+{
     for (int i = 0; i < borderWidth; i++) printf("=");
     printf("\n");
 
@@ -274,7 +277,8 @@ bool playerAttackSkill(struct Player* player, struct entityData* enemy, int skil
     return false;
 }
 
-void battleAttack(struct Player* player, struct entityData* enemy) {
+void battleAttack(struct Player* player, struct entityData* enemy) 
+{
     srand(time(NULL));  
     bool playerFirst = player->weapon.speed >= enemy->weapon.speed;
 
@@ -350,7 +354,8 @@ int skillChargeAttack(struct Player* player, struct entityData* enemy, int baseD
   }
 }
 
-void battleEnd(struct Player* player, struct entityData* enemy) {
+void battleEnd(struct Player* player, struct entityData* enemy) 
+{
     srand(time(NULL));
 
     int expGain = enemy->baseExpDrop + rand() % enemy->baseExpDrop;
@@ -358,7 +363,7 @@ void battleEnd(struct Player* player, struct entityData* enemy) {
 
     player->exp += expGain;
     player->money += moneyGain;
-    int levelUP = (int)((float)(baseEXPUP * player->level * 1.50));
+    levelUP = (int)((float)(baseEXPUP * player->level * 1.50));
 
     if (player->exp >= levelUP )
     {
@@ -375,7 +380,8 @@ void battleEnd(struct Player* player, struct entityData* enemy) {
     drawPlayerHud();
 }
 
-struct entityData randomBattle() {
+struct entityData randomBattle() 
+{
     extern struct entityData enemies[];
     srand(time(NULL));
 
@@ -385,12 +391,13 @@ struct entityData randomBattle() {
 }
 
 struct Player startBattle(struct Player player, struct entityData enemy) {
-    if (enemy.name == NULL) {
+    if (enemy.name == NULL) 
+    {
         enemy = randomBattle();
     }
 
-    while (player.health > 0 && enemy.health > 0) {
-         
+    while (player.health > 0 && enemy.health > 0) 
+    {
         battleUI(player, enemy);
 
         printf("\n(A)ttack or (D)efend: ");
@@ -426,7 +433,7 @@ struct Player startBattle(struct Player player, struct entityData enemy) {
 void mainMenu(struct Player player) {
     while (1) {
         int pilihan;
-         
+
         printf("==== MAIN MENU ====\n");
         printf("1. Random Battle\n2. Exit\n");
         printf("Choose: ");
@@ -445,7 +452,6 @@ void mainMenu(struct Player player) {
                 break;
         }
     }
-    
 }
 
 void gameOver() {
