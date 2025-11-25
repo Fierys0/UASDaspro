@@ -5,6 +5,7 @@ extern void center_box(WINDOW *parent, WINDOW *child, int y_offset, int styley, 
 extern int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index), bool isExtraKey);
 extern void loadPlayer(struct Player *player);
 WINDOW *titleScreenUI, *titleUI, *choicesUI, *nameInput;
+extern bool isTutorial;
 
 int titleInput(char* strChoices[], WINDOW *win)
 {
@@ -88,6 +89,7 @@ void titleScreen()
         break;
       case 1:
         loadPlayer(&player);
+        isTutorial = false;
         clear();
         break;
       default:

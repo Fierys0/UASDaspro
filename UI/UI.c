@@ -14,10 +14,12 @@ bool isDebug = true;
 int debugPosition = 1;
 int debugMessagePosition = 1;
 WINDOW * lastKeypad;
+bool isTutorial = true;
 
 WINDOW *debugHud, *playerhud, *mainScreen, 
        *commandHud, *textHud, *debugMessageHud, 
-       *inputUser, *debugCheat;
+       *inputUser, *debugCheat, *tutorialHud,
+       *tutorialDesc;
 
 int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index), bool isExtraKey);
 void debugMenuInput(int usrInput);
@@ -32,6 +34,39 @@ void drawPlayerHud();
 void drawDebugInput();
 void drawDebugMessage();
 
+void drawTutorial()
+{
+  char *tutorialString[] = {
+    "Untuk bermain gunakan arrow key dan ketik enter untuk memilih",
+    "Pilih explore untuk mengeksplore dan mencari musuh",
+    "Pilih shop untuk berbelanja armor dan weapon untuk menambah damagemu!",
+    "Rest untuk beristirahat dan memulihkan hp ke max hp kembali",
+    "Save untuk menyimpan progressmu setelah explore atau membeli sesuatu",
+    "Load untuk memuat perjalananmu sebelumnya",
+    "Ketik escape [esc] untuk keluar dari program"
+  };
+  tutorialHud = newwin(10, 30, 0, 0);
+  center_box(mainScreen, tutorialHud, 11, 0, 0);
+  mvwprintw(tutorialHud, 2, 1, "Tutorial bermain");
+  mvwprintw(tutorialHud, 0, 6, "Press Enter to continue");
+  tutorialDesc = newwin(5, 28, 0, 0);
+  center_box(mainScreen, tutorialDesc, 15, 32, 32);
+  wrefresh(tutorialHud);
+  wrefresh(tutorialDesc);
+  for (int i = 0; i <= 6; i++)
+  {
+    mvwprintw(tutorialDesc, 0, 0, "%s", tutorialString[i]);
+    wrefresh(tutorialDesc);
+    while (1)
+    {
+      int pilihan = wgetch(tutorialHud);
+      if (pilihan == 10) break;
+    }
+    werase(tutorialDesc);
+  }
+  werase(tutorialHud);
+  werase(tutorialDesc);
+}
 
 void flashWindow(WINDOW *win, int flashes, int delay, int borderstyle)
 {
@@ -249,6 +284,7 @@ void clearMainScreen()
 
 int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index), bool isExtraKey)
 {
+
     keypad(win, TRUE);
     int highlight = 0;
     int arraySize = 0;
@@ -273,7 +309,14 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, voi
             wattron(win, A_REVERSE);
             mvwprintw(win, i + starty, startx, "%s", strChoices[i]);
             wattroff(win, A_REVERSE);
-        }
+        } wrefresh(win);
+
+        if (isTutorial)
+        {
+            drawTutorial();
+            isTutorial = false;
+            drawMainScreen();
+        } 
 
         int oldHighlight = highlight;
         int usrInput = wgetch(win);
@@ -475,6 +518,7 @@ int mainUI()
     init_pair(5, COLOR_WHITE, COLOR_BLACK);
 
     signal(SIGWINCH, handle_resize);
+    draw_all();
     draw_all();
 
     sortArmorsByPrice();

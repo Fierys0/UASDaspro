@@ -26,7 +26,7 @@ enum ShopType
 };
 
 enum ShopType currentShopType = SHOP_WEAPON;
-
+//LINEAR SEARCH
 int itemSearch(WINDOW *parent, WINDOW *child)
 {
     child = newwin(5, 29, 0, 0);
@@ -150,6 +150,8 @@ void weaponDescription(int index)
     mvwprintw(shopDescription, 5, 0, "atk:%d", weapon[index].damage);
     mvwprintw(shopDescription, 5, 7, "spd:%d", weapon[index].speed);
     mvwprintw(shopDescription, 6, 0, "Price:%d", weapon[index].price);
+    mvwprintw(shopHud, 8, 15, "\"/\" to search");
+    wrefresh(shopHud);
     wrefresh(shopDescription);
 }
 
@@ -166,6 +168,8 @@ void armorDescription(int index)
     mvwprintw(shopDescription, 5, 0, "def:%d", armor[index].baseDefense);
     mvwprintw(shopDescription, 5, 7, "res:%d", armor[index].resistance);
     mvwprintw(shopDescription, 6, 0, "Price:%d", armor[index].price);
+    mvwprintw(shopHud, 8, 15, "\"/\" to search");
+    wrefresh(shopHud);
     wrefresh(shopDescription);
 }
 

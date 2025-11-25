@@ -42,6 +42,7 @@ struct weaponData weapon[] = {
     {"Primal Tempest", 68, 0.14f, 1.70f, 3, 0, "Ultimate wind sword with tempest force", 5000}
 };
 
+//SELECTION SORT
 void sortWeaponsByPrice() {
     int size = sizeof(weapon) / sizeof(weapon[0]);
 
