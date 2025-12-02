@@ -11,6 +11,13 @@
 #include <ncurses.h>
 #include <sys/stat.h>
 
+#ifdef _WIN32
+    #include <direct.h>
+    #define MKDIR(path) _mkdir(path)
+#else
+    #define MKDIR(path) mkdir(path, 0777)
+#endif
+
 #define AC_BLACK "\x1b[30m"
 #define AC_RED "\x1b[31m"
 #define AC_GREEN "\x1b[32m"
@@ -488,15 +495,19 @@ void gameOver() {
 
 void savePlayer(struct Player *player)
 {
-    char *saveLocation = "save/save.dat";
-    mkdir("save", 0777);
+    const char *saveFolder = "save";
+    const char *saveLocation = "save/save.dat";
+
+    MKDIR(saveFolder);
 
     FILE *f = fopen(saveLocation, "wb");
-    if (!f) return;
+    if (!f) {
+        inputDebugMessage("Failed to save %s", saveLocation);
+        return;
+    }
 
     inputDebugMessage("save %s", saveLocation);
     fwrite(player, sizeof(struct Player), 1, f);
-
     fclose(f);
 
     matrixAnimationNcurses(textHud, 1, 10, 10, "Game saved!");

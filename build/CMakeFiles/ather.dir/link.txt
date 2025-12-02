@@ -1,1 +1,0 @@
-/usr/sbin/cc -Wl,--dependency-file=CMakeFiles/ather.dir/link.d CMakeFiles/ather.dir/main.c.o -o ather  -lcurses -lform
