@@ -21,7 +21,8 @@ Ather/
 
 ## Features
 - Overworld movement system with tile‑based terrain.
-- Grass encounter events with battle transitions.
+-<t_k�>ýrequire"cmp.utils.feedkeys".run(1)
+uGrass encounter events with battle transitions.
 - Color‑coded map tiles (grass, dirt, water).
 - ncurses/PDCurses‑based UI.
 - Debug logging overlay.
@@ -67,7 +68,11 @@ cmake .. -G "MinGW Makefiles"
 cmake --build .
 ```
 
-The resulting executable will be located in:
+If the program doesn't work in window
+You can use [cygwin](https://www.cygwin.com/) 
+and compile it the same way as Linux
+
+### The resulting executable will be located in:
 ```
 build/Ather
 ```
