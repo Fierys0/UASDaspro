@@ -1,4 +1,7 @@
-#include <ncurses.h>
+#ifdef __unix__
+  #include <ncurses.h>
+#else
+  #include <curses.h>
 #include <locale.h>
 #include <string.h>
 #include <unistd.h>

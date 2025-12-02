@@ -8,7 +8,10 @@
 #include "weaponTable.c"
 #include "enemyTable.c"
 #include "playerData.c"
-#include <ncurses.h>
+#ifdef __unix__
+  #include <ncurses.h>
+#else
+  #include <curses.h>
 #include <sys/stat.h>
 
 #ifdef _WIN32
