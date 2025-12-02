@@ -7,10 +7,10 @@ Ather is a terminal-based RPG exploration and battle system written in C, using 
 ![license](https://img.shields.io/github/license/Fierys0/UASDaspro)
 
 ## Features
-- Overworld movement system with tile¿based terrain.
+- Overworld movement system with tile-based terrain.
 - Grass encounter events with battle transitions.
 - Color coded map tiles (grass, dirt, water).
-- ncurses/PDCurses¿based UI.
+- ncurses/PDCurses-based UI.
 - Debug logging overlay.
 - Battle animations.
 
@@ -21,9 +21,15 @@ Ather is a terminal-based RPG exploration and battle system written in C, using 
 - ncurses (development headers)
 
 Install ncurses:
+Debian:
 ```
-sudo apt install libncurses-dev
+sudo apt-get install libncurses5-dev libncursesw5-dev
 ```
+Arch:
+```
+sudo pacman -S ncurses
+```
+
 or
 ```
 brew install ncurses
