@@ -1,0 +1,3 @@
+/home/miruku/UASDaspro/build/CMakeFiles/ather.dir
+/home/miruku/UASDaspro/build/CMakeFiles/edit_cache.dir
+/home/miruku/UASDaspro/build/CMakeFiles/rebuild_cache.dir

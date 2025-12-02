@@ -36,36 +36,36 @@ void drawDebugMessage();
 
 void drawTutorial()
 {
-  char *tutorialString[] = {
-    "Untuk bermain gunakan arrow key dan ketik enter untuk memilih",
-    "Pilih explore untuk mengeksplore dan mencari musuh",
-    "Pilih shop untuk berbelanja armor dan weapon untuk menambah damagemu!",
-    "Rest untuk beristirahat dan memulihkan hp ke max hp kembali",
-    "Save untuk menyimpan progressmu setelah explore atau membeli sesuatu",
-    "Load untuk memuat perjalananmu sebelumnya",
-    "Ketik escape [esc] untuk keluar dari program"
-  };
-  tutorialHud = newwin(10, 30, 0, 0);
-  center_box(mainScreen, tutorialHud, 11, 0, 0);
-  mvwprintw(tutorialHud, 2, 1, "Tutorial bermain");
-  mvwprintw(tutorialHud, 0, 6, "Press Enter to continue");
-  tutorialDesc = newwin(5, 28, 0, 0);
-  center_box(mainScreen, tutorialDesc, 15, 32, 32);
-  wrefresh(tutorialHud);
-  wrefresh(tutorialDesc);
-  for (int i = 0; i <= 6; i++)
-  {
-    mvwprintw(tutorialDesc, 0, 0, "%s", tutorialString[i]);
+    char *tutorialString[] = {
+      "Untuk bermain gunakan arrow key dan ketik enter untuk memilih",
+      "Pilih explore untuk mengeksplore dan mencari musuh",
+      "Pilih shop untuk berbelanja armor dan weapon untuk menambah damagemu!",
+      "Rest untuk beristirahat dan memulihkan hp ke max hp kembali",
+      "Save untuk menyimpan progressmu setelah explore atau membeli sesuatu",
+      "Load untuk memuat perjalananmu sebelumnya",
+      "Ketik escape [esc] untuk keluar dari program"
+    };
+    tutorialHud = newwin(10, 30, 0, 0);
+    center_box(mainScreen, tutorialHud, 11, 0, 0);
+    mvwprintw(tutorialHud, 2, 1, "Tutorial bermain");
+    mvwprintw(tutorialHud, 0, 6, "Press Enter to continue");
+    tutorialDesc = newwin(5, 28, 0, 0);
+    center_box(mainScreen, tutorialDesc, 15, 32, 32);
+    wrefresh(tutorialHud);
     wrefresh(tutorialDesc);
-    while (1)
+    for (int i = 0; i <= 6; i++)
     {
-      int pilihan = wgetch(tutorialHud);
-      if (pilihan == 10) break;
+      mvwprintw(tutorialDesc, 0, 0, "%s", tutorialString[i]);
+      wrefresh(tutorialDesc);
+      while (1)
+      {
+        int pilihan = wgetch(tutorialHud);
+        if (pilihan == 10) break;
+      }
+      werase(tutorialDesc);
     }
+    werase(tutorialHud);
     werase(tutorialDesc);
-  }
-  werase(tutorialHud);
-  werase(tutorialDesc);
 }
 
 void flashWindow(WINDOW *win, int flashes, int delay, int borderstyle)
@@ -496,7 +496,9 @@ void handle_resize(int sig)
     endwin();
     refresh();
     clear();
-    resizeterm(LINES, COLS);
+    #ifndef __unix__ 
+      resizeterm(LINES, COLS);
+    #endif
     draw_all();
     debugMenu();
 }
@@ -516,8 +518,9 @@ int mainUI()
     init_pair(3, COLOR_BLACK, COLOR_GREEN);
     init_pair(4, COLOR_BLACK, COLOR_RED);
     init_pair(5, COLOR_WHITE, COLOR_BLACK);
-
-    signal(SIGWINCH, handle_resize);
+    #ifdef __unix__
+      signal(SIGWINCH, handle_resize);
+    #endif
     draw_all();
     draw_all();
 

@@ -1,31 +1,73 @@
-# Tugas UAS Dasar Pemrograman
-Program untuk memenuhi tugas Ujian Akhir Semester Dasar Pemrograman
+# Ather
 
-# Introduction
+Ather is a terminal-based RPG exploration and battle system written in C, using ncurses (Linux/macOS) or PDCurses (Windows). This project is structured for portability and cross‑platform builds, with optional auto‑compilation of PDCurses on Windows if it has not been built yet.
 
- ░█████╗░████████╗██╗░░██╗███████╗██████╗░
- ██╔══██╗╚══██╔══╝██║░░██║██╔════╝██╔══██╗
- ███████║░░░██║░░░███████║█████╗░░██████╔╝
- ██╔══██║░░░██║░░░██╔══██║██╔══╝░░██╔══██╗
- ██║░░██║░░░██║░░░██║░░██║███████╗██║░░██║
- ╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝
+## Status
+![last-commit](https://img.shields.io/github/last-commit/Fierys0/UASDaspro?label=Last%20Update)
+![repo-size](https://img.shields.io/github/repo-size/Fierys0/UASDaspro)
+![license](https://img.shields.io/github/license/Fierys0/UASDaspro)
 
-Ather adalah game RPG yang dibuat di dalam bahasa c dengan menggunakan library ncurses
+## Project Structure
+```
+Ather/
+ ├── CMakeLists.txt
+ ├── README.md
+ ├── *.c
+ ├── *.h
+ ├── external/
+ │    └── pdcurses/  (source only; compiled automatically if needed)
+ └── assets/
+```
 
-## Features:
-* Spaghetti code
-* Unoptimized as hell
-* Use static UI instead of dynamic
-* Unmaintainable 
+## Features
+- Overworld movement system with tile‑based terrain.
+- Grass encounter events with battle transitions.
+- Color‑coded map tiles (grass, dirt, water).
+- ncurses/PDCurses‑based UI.
+- Debug logging overlay.
+- Battle animations.
 
-### How to compile
+## Build Requirements
+### Linux / macOS
+- gcc or clang  
+- CMake ≥ 3.10  
+- ncurses (development headers)
 
-Linux:
+Install ncurses:
+```
+sudo apt install libncurses-dev
+```
+or
+```
+brew install ncurses
+```
 
-1. Install ncurses
-2. and compile it using compile.sh
+### Windows
+- MinGW-w64 or MSVC  
+- CMake ≥ 3.10  
+- PDCurses source code (included in `external/pdcurses`)  
 
-Windows:
-1. Install [cygwin](https://www.cygwin.com/)
-2. Make sure ncurses is installed
-2. compile it using compile.sh
+If PDCurses is not compiled, the CMake build will attempt to build it automatically.
+
+## Building
+
+### Linux / macOS (using ncurses)
+```
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+### Windows (using PDCurses, auto-build)
+```
+mkdir build
+cd build
+cmake .. -G "MinGW Makefiles"
+cmake --build .
+```
+
+The resulting executable will be located in:
+```
+build/Ather
+```

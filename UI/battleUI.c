@@ -1,4 +1,3 @@
-
 WINDOW * enemySprite, * enemyHealthHud;
 
 char* enemyHealthBar = "[##########]";
