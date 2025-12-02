@@ -21,7 +21,7 @@ Ather is a terminal-based RPG exploration and battle system written in C, using 
 - ncurses (development headers)
 
 Install ncurses:
-Debian:
+
 ```
 sudo apt-get install libncurses5-dev libncursesw5-dev
 ```
