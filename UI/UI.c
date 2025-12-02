@@ -2,6 +2,7 @@
   #include <ncurses.h>
 #else
   #include <curses.h>
+#endif
 #include <locale.h>
 #include <string.h>
 #include <unistd.h>

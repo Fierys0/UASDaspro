@@ -12,6 +12,7 @@
   #include <ncurses.h>
 #else
   #include <curses.h>
+#endif
 #include <sys/stat.h>
 
 #ifdef _WIN32
