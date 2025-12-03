@@ -22,6 +22,16 @@
     #define MKDIR(path) mkdir(path, 0777)
 #endif
 
+// i want it to make delay different oses but it cant use float so 1 is the lowest :(
+// windows delay is too slow
+#ifdef __unix__
+    #define NORMAL_DELAY 1
+    #define SLOW_DELAY 10
+#else
+    #define NORMAL_DELAY 1
+    #define SLOW_DELAY 3
+#endif
+
 #define AC_BLACK "\x1b[30m"
 #define AC_RED "\x1b[31m"
 #define AC_GREEN "\x1b[32m"
@@ -33,7 +43,7 @@
 #define AC_NORMAL "\x1b[m"
 #define STUN 1
 
-extern void matrixAnimationNcurses(WINDOW* win, int startX, unsigned int characterDelay, unsigned int textDelay, const char* stringData, ...);
+extern void matrixAnimationNcurses(int startX, unsigned int characterDelay, unsigned int textDelay, const char* stringData, ...);
 extern WINDOW * enemySprite, * enemyHealthHud;
 extern WINDOW * mainScreen, * textHud, *commandHud, *playerhud;
 extern void drawHealthUI(struct entityData enemy);
@@ -141,7 +151,7 @@ bool enemyAttackFunc(struct Player* player, struct entityData* enemy)
     int playerMaxHealth = player->maxHealth;
 
     playerHealthBar = drawBar(playerHealth, playerMaxHealth);
-    matrixAnimationNcurses(textHud, 1, 1, 1,
+    matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY,
         "%s menyerang %s (DMG: %d)", enemy->name, player->name, finalDamage);
 
     drawPlayerHud();
@@ -202,14 +212,14 @@ bool playerAttackFunc(struct Player* player, struct entityData* enemy)
     wrefresh(enemyHealthHud);
     drawHealthUI(*enemy);
 
-    matrixAnimationNcurses(textHud, 1, 1, 1,
+    matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY,
         "%s menyerang %s (DMG: %d)", player->name, enemy->name, finalDamage);
 
     drawPlayerHud();
     napms(1000);
 
     if (enemy->health == 0) {
-        matrixAnimationNcurses(textHud, 1, 1, 1, "%s defeated!\n", enemy->name);
+        matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY, "%s defeated!", enemy->name);
         napms(1000);
         battleEnd(player, enemy);
         napms(1000);
@@ -237,14 +247,14 @@ bool playerAttackSkill(struct Player* player, struct entityData* enemy, int skil
     wrefresh(enemyHealthHud);
     drawHealthUI(*enemy);
 
-    matrixAnimationNcurses(textHud, 1, 1, 1,
+    matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY,
         "%s menyerang %s (DMG: %d)", player->name, enemy->name, finalDamage);
 
     drawPlayerHud();
     napms(1000);
 
     if (enemy->health == 0) {
-        matrixAnimationNcurses(textHud, 1, 1, 1, "%s defeated!\n", enemy->name);
+        matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY, "%s defeated!", enemy->name);
         napms(1000);
         battleEnd(player, enemy);
         napms(1000);
@@ -287,13 +297,13 @@ void playerRest(struct Player *player)
   char *playerName = player->name;
   if (player->money < 5)
   {
-    matrixAnimationNcurses(textHud, 1, 1, 1, "Duit kamu kurang!");
+    matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY, "Duit kamu kurang!");
     napms(300);
     return;
   }
   player->money -= 5;
   player->health = player->maxHealth;
-  matrixAnimationNcurses(textHud, 1, 10, 10, "%s beristirahat!", playerName);
+  matrixAnimationNcurses(1, SLOW_DELAY, SLOW_DELAY, "%s beristirahat!", playerName);
   napms(300);
 }
 
@@ -316,7 +326,7 @@ void battleDefend(struct Player *player, struct entityData *enemy)
     int playerMaxHealth = player->maxHealth;
     playerHealthBar = drawBar(playerHealth, playerMaxHealth);
     drawPlayerHud();
-    matrixAnimationNcurses(textHud, 1, 1, 1, "berhasil menangkis (damage ditangkis: %d)", enemyAttack - parriedAttack);
+    matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY, "berhasil menangkis (damage ditangkis: %d)", enemyAttack - parriedAttack);
 }
 
 // Rekursi
@@ -358,8 +368,8 @@ void battleEnd(struct Player* player, struct entityData* enemy)
       player->health = player->maxHealth;
     }
 
-    matrixAnimationNcurses(textHud, 1, 1, 1, "%s mengalahkan %s!\n", player->name, enemy->name);
-    matrixAnimationNcurses(textHud, 1, 1, 1, "Mendapat %d EXP dan %d Gold!\n", expGain, moneyGain);
+    matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY, "%s mengalahkan %s!", player->name, enemy->name);
+    matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY, "Mendapat %d EXP dan %d Gold!", expGain, moneyGain);
     enemyHealthBar = "[##########]";
     expBar = drawBar(player->exp, levelUP);
     
@@ -377,7 +387,7 @@ struct entityData randomBattle()
 }
 
 void gameOver() {
-    matrixAnimationNcurses(textHud, 1, 10, 10, "GAME OVER!");
+    matrixAnimationNcurses(1, SLOW_DELAY, SLOW_DELAY, "GAME OVER!");
     usleep(100000);
     getch();
     endwin();
@@ -401,7 +411,7 @@ void savePlayer(struct Player *player)
     fwrite(player, sizeof(struct Player), 1, f);
     fclose(f);
 
-    matrixAnimationNcurses(textHud, 1, 10, 10, "Game saved!");
+    matrixAnimationNcurses(1, SLOW_DELAY, SLOW_DELAY, "Game saved!");
     napms(300);
 }
 
@@ -416,7 +426,7 @@ void loadPlayer(struct Player *player)
 
     fclose(f);
 
-    matrixAnimationNcurses(textHud, 1, 10, 10, "Game loaded!");
+    matrixAnimationNcurses(1, SLOW_DELAY, SLOW_DELAY, "Game loaded!");
     draw_all();
 }
 

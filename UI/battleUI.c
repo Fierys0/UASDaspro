@@ -22,7 +22,6 @@ extern int debugMessagePosition;
 extern void inputDebugMessage(const char *messageString, ...);
 extern const char* slimeSprite;
 extern void clearCommandHud();
-extern void matrixAnimation(const char* stringData, unsigned int characterDelay, unsigned int textDelay);
 extern void drawHealth(int health, int maxHealth);
 extern void battleUI(struct Player player, struct entityData enemy);
 extern struct Player startBattle(struct Player player, struct entityData enemy);
@@ -36,13 +35,13 @@ extern void clearMainScreen();
 
 int mainboxLimit = 1;
 
-void matrixAnimationNcurses(WINDOW* win, int startX, unsigned int characterDelay, unsigned int textDelay, const char* stringData, ...)
+void matrixAnimationNcurses(int startX, unsigned int characterDelay, unsigned int textDelay, const char* stringData, ...)
 {
     if (mainboxLimit > 4)
     {
         mainboxLimit = 1;
-        delwin(win);
-        win = newwin(6, 70, 31, 31);
+        delwin(textHud);
+        textHud = newwin(6, 70, 31, 31);
         box(textHud, 0, 0);
         mvwprintw(textHud, 0, 1, "Text");
         wrefresh(textHud);
@@ -60,28 +59,28 @@ void matrixAnimationNcurses(WINDOW* win, int startX, unsigned int characterDelay
     int out_len = 0;
 
     srand(time(NULL));
-    wrefresh(win);
+    wrefresh(textHud);
 
     for (int i = 0; i < len; i++) {
         char realChar = formatted[i];
 
         for (int j = 0; j < 15; j++) {
             char randChar = (char)((rand() % 94) + 33);
-            mvwprintw(win, mainboxLimit, startX + out_len, "%c", randChar);
-            wrefresh(win);
+            mvwprintw(textHud, mainboxLimit, startX + out_len, "%c", randChar);
+            wrefresh(textHud);
             napms(characterDelay);
         }
 
         output[out_len++] = realChar;
         output[out_len] = '\0';
 
-        mvwprintw(win, mainboxLimit, startX, "%s", output);
-        wrefresh(win);
+        mvwprintw(textHud, mainboxLimit, startX, "%s", output);
+        wrefresh(textHud);
         napms(textDelay);
     }
 
     mainboxLimit++;
-    wrefresh(win);
+    wrefresh(textHud);
 }
 
 void drawHealthUI(struct entityData enemy)
@@ -158,13 +157,13 @@ void battleStart()
       }
       drawHealthUI(enemy);
       drawPlayerHud();
+      flushinp();
     }
 
     if (player.health <= 0)
     {
         gameOver();
     }
-
 
     clearCommandHud();
 }

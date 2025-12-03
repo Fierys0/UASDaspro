@@ -308,7 +308,7 @@ void openWeaponShop(struct Player* player)
             }
             else
             {
-                matrixAnimationNcurses(textHud, 1, 1, 1, "Item tidak ditemukan");
+                matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY, "Item tidak ditemukan");
             }
         
             continue;
@@ -325,10 +325,10 @@ void openWeaponShop(struct Player* player)
                 player->money -= price;
                 addWeaponToInventory(player, itemIndex);
                 equipWeapon(player, itemIndex);
-                matrixAnimationNcurses(textHud, 1, 1, 1, "Kamu membeli %s", weapon[itemIndex].name);
+                matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY, "Kamu membeli %s", weapon[itemIndex].name);
                 drawPlayerHud();
             } else {
-                matrixAnimationNcurses(textHud, 1, 1, 1, "Uangmu tidak cukup");
+                matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY, "Uangmu tidak cukup");
             }
 
             continue;
@@ -412,7 +412,7 @@ void openArmorShop(struct Player* player)
         }
         else
         {
-            matrixAnimationNcurses(textHud, 1, 1, 1, "Item tidak ditemukan");
+            matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY, "Item tidak ditemukan");
         }
         continue;
         }
@@ -427,10 +427,10 @@ void openArmorShop(struct Player* player)
                 player->money -= price;
                 addArmorToInventory(player, itemIndex);
                 equipArmor(player, itemIndex);
-                matrixAnimationNcurses(textHud, 1, 1, 1, "Kamu membeli %s", armor[itemIndex].name);
+                matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY, "Kamu membeli %s", armor[itemIndex].name);
                 drawPlayerHud();
             } else {
-                matrixAnimationNcurses(textHud, 1, 1, 1, "Uangmu tidak cukup");
+                matrixAnimationNcurses(1, NORMAL_DELAY, NORMAL_DELAY, "Uangmu tidak cukup");
             }
 
             continue;

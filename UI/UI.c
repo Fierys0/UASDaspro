@@ -187,7 +187,6 @@ char* userInput(WINDOW *win, const char *question)
     }
 
     curs_set(0);
-    keypad(win, FALSE);
     return buffer;
 }
 
@@ -333,7 +332,7 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, voi
             case KEY_DOWN:
                 highlight = (highlight + 1) % arraySize;
                 break;
-            case '\n': case '\r': case KEY_ENTER:
+            case 10:
                 /* Enter pressed */
                 debugMenuInput( (usrInput==KEY_ENTER) ? KEY_ENTER : '\n' );
                 return highlight;
@@ -343,6 +342,7 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, voi
                     int exitChoices = exitMenu();
                     if (exitChoices == 1) {
                         endwin();
+                        printf("Exited throught exithud");
                         exit(0);
                     }
                 }
@@ -351,9 +351,7 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, voi
                 if (isExtraKey)
                     return usrInput;
                 break;
-            default:
-                /* other keys ignored */
-                break;
+
         }
 
         /* debug and highlight callback only when changed or key pressed */
@@ -361,7 +359,8 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, voi
         debugMenuInput(usrInput);
 
         if (highlight != oldHighlight && onHighlight) onHighlight(highlight);
-    }
+        flushinp();
+  }
 }
 
 void drawPlayerHud()
@@ -425,7 +424,6 @@ void draw_all()
 // Menggambar wwindow untuk keluar program
 int exitMenu()
 {
-    keypad(lastKeypad, FALSE);
 
     // Create popup window
     WINDOW *exitHud = newwin(7, 50, 15, 25);
@@ -472,7 +470,6 @@ int exitMenu()
 
         case 10: // Enter key
         {
-            keypad(exitHud, FALSE);
             int result = highlight;
             werase(exitHud);
             wrefresh(exitHud);
@@ -484,7 +481,6 @@ int exitMenu()
 
         case 27: // ESC key
         {
-            keypad(exitHud, FALSE);
             werase(exitHud);
             wrefresh(exitHud);
             delwin(exitHud);
@@ -502,6 +498,7 @@ int exitMenu()
 void handle_resize(int sig)
 {
     endwin();
+    printf("handle_resize");
     refresh();
     clear();
     #ifdef __unix__ 
@@ -578,5 +575,6 @@ int mainUI(bool isDebugArg)
     }
 
     endwin();
+    printf("exit program?");
     return 0;
 }

@@ -16,33 +16,33 @@ extern bool isDebug;
 extern int mainBoxLimit;
 extern WINDOW * textHud;
 extern void clearTextHud();
-extern void matrixAnimationNcurses(WINDOW* win, int startX, unsigned int characterDelay, unsigned int textDelay, const char* stringData, ...);
+extern void matrixAnimationNcurses(int startX, unsigned int characterDelay, unsigned int textDelay, const char* stringData, ...);
 extern void battleStart();
 extern void clearMainScreen();
 
-void drawTile(WINDOW *win, int y, int x, char tile)
+void drawTile(int y, int x, char tile)
 {
     if (tile == 'W') {
-        wattron(win, COLOR_PAIR(10));
-        mvwaddch(win, y, x, tile);
-        wattroff(win, COLOR_PAIR(10));
+        wattron(mainScreen, COLOR_PAIR(10));
+        mvwaddch(mainScreen, y, x, tile);
+        wattroff(mainScreen, COLOR_PAIR(10));
     }
     else if (tile == '.') {
-        wattron(win, COLOR_PAIR(11));
-        mvwaddch(win, y, x, tile);
-        wattroff(win, COLOR_PAIR(11));
+        wattron(mainScreen, COLOR_PAIR(11));
+        mvwaddch(mainScreen, y, x, tile);
+        wattroff(mainScreen, COLOR_PAIR(11));
     }
     else if (tile == '~') {
-        wattron(win, COLOR_PAIR(12));
-        mvwaddch(win, y, x, tile);
-        wattroff(win, COLOR_PAIR(12));
+        wattron(mainScreen, COLOR_PAIR(12));
+        mvwaddch(mainScreen, y, x, tile);
+        wattroff(mainScreen, COLOR_PAIR(12));
     }
     else {
-        mvwaddch(win, y, x, tile);
+        mvwaddch(mainScreen, y, x, tile);
     }
 }
 
-void onGrassEvent(WINDOW *game, char **map)
+void onGrassEvent(char **map)
 {
     inputDebugMessage("Player on grass");
     srand(time(NULL));
@@ -52,7 +52,7 @@ void onGrassEvent(WINDOW *game, char **map)
     if (randomEncounter == 1)
     {
         clearTextHud();
-        matrixAnimationNcurses(textHud, 1, 10, 10, "Sesuatu mendekat!");
+        matrixAnimationNcurses(1, 10, 10, "Sesuatu mendekat!");
         napms(150);
         battleStart();
         clearMainScreen();
@@ -61,23 +61,23 @@ void onGrassEvent(WINDOW *game, char **map)
     // redraw map
     for (int i = 0; i < 29; i++) {
         for (int j = 0; j < 70 - 2; j++) {
-            drawTile(game, i + 1, j + 1, map[i][j]);
+            drawTile(i + 1, j + 1, map[i][j]);
         }
     }
 
     // Exit banner (red background + white text)
     for (int x = 1; x < 70 - 1; x++){
-        wattron(game, COLOR_PAIR(4));
-        mvwaddch(game, 1, x, '-');
-        wattroff(game, COLOR_PAIR(4));
+        wattron(mainScreen, COLOR_PAIR(4));
+        mvwaddch(mainScreen, 1, x, '-');
+        wattroff(mainScreen, COLOR_PAIR(4));
     }
 
-    wattron(game, COLOR_PAIR(4));
-    mvwprintw(game, 1, (70 / 2) - 5, "---EXIT---");
-    wattroff(game, COLOR_PAIR(4));
+    wattron(mainScreen, COLOR_PAIR(4));
+    mvwprintw(mainScreen, 1, (70 / 2) - 5, "---EXIT---");
+    wattroff(mainScreen, COLOR_PAIR(4));
 
-    wrefresh(game);
-    keypad(game, TRUE);
+    wrefresh(mainScreen);
+    keypad(mainScreen, TRUE);
 }
 
 void generateMap(char **map, int h, int w)
@@ -98,7 +98,7 @@ void generateMap(char **map, int h, int w)
     }
 }
 
-int overworldStart(WINDOW *game)
+int overworldStart()
 {
     // Grass (W)
     init_pair(10, COLOR_GREEN, COLOR_GREEN);
@@ -119,9 +119,9 @@ int overworldStart(WINDOW *game)
     init_pair(5, COLOR_WHITE, COLOR_BLACK);
 
     int boxHeight, boxWidth;
-    getmaxyx(game, boxHeight, boxWidth);
-    keypad(game, TRUE);
-    nodelay(game, FALSE);
+    getmaxyx(mainScreen, boxHeight, boxWidth);
+    keypad(mainScreen, TRUE);
+    nodelay(mainScreen, FALSE);
     srand(time(NULL));
 
     // Allocate map
@@ -131,40 +131,40 @@ int overworldStart(WINDOW *game)
 
     generateMap(map, boxHeight - 2, boxWidth - 2);
 
-    box(game, 0, 0);
+    box(mainScreen, 0, 0);
 
     // Draw map
     for (int y = 0; y < boxHeight - 2; y++)
         for (int x = 0; x < boxWidth - 2; x++)
-            drawTile(game, y + 1, x + 1, map[y][x]);
+            drawTile(y + 1, x + 1, map[y][x]);
 
     // EXIT banner
     for (int x = 1; x < boxWidth - 1; x++){
-        wattron(game, COLOR_PAIR(4));
-        mvwaddch(game, 1, x, '-');
-        wattroff(game, COLOR_PAIR(4));
+        wattron(mainScreen, COLOR_PAIR(4));
+        mvwaddch(mainScreen, 1, x, '-');
+        wattroff(mainScreen, COLOR_PAIR(4));
     }
 
-    wattron(game, COLOR_PAIR(4));
-    mvwprintw(game, 1, (boxWidth / 2) - 5, "---EXIT---");
-    wattroff(game, COLOR_PAIR(4));
+    wattron(mainScreen, COLOR_PAIR(4));
+    mvwprintw(mainScreen, 1, (boxWidth / 2) - 5, "---EXIT---");
+    wattroff(mainScreen, COLOR_PAIR(4));
 
     // Player start pos
     int px = boxWidth / 2;
     int py = boxHeight / 2;
 
-    wattron(game, COLOR_PAIR(20));
-    mvwaddch(game, py, px, '@');
-    wattroff(game, COLOR_PAIR(20));
-    wrefresh(game);
+    wattron(mainScreen, COLOR_PAIR(20));
+    mvwaddch(mainScreen, py, px, '@');
+    wattroff(mainScreen, COLOR_PAIR(20));
+    wrefresh(mainScreen);
 
     int ch;
     while (1)
     {
-        ch = wgetch(game);
+        ch = wgetch(mainScreen);
 
         // restore tile under player
-        drawTile(game, py, px, map[py - 1][px - 1]);
+        drawTile(py, px, map[py - 1][px - 1]);
 
         debugMenuInput(ch);
 
@@ -179,22 +179,22 @@ int overworldStart(WINDOW *game)
         // exit
         if (py == 1)
         {
-            mvwprintw(game, 0, 2, "[Exiting overworld...]");
-            wrefresh(game);
+            mvwprintw(mainScreen, 0, 2, "[Exiting overworld...]");
+            wrefresh(mainScreen);
             napms(400);
             break;
         }
 
         // grass event
         if (map[py - 1][px - 1] == 'W')
-            onGrassEvent(game, map);
+            onGrassEvent(map);
 
         // draw player
-        wattron(game, COLOR_PAIR(20));
-        mvwaddch(game, py, px, '@');
-        wattroff(game, COLOR_PAIR(20));
+        wattron(mainScreen, COLOR_PAIR(20));
+        mvwaddch(mainScreen, py, px, '@');
+        wattroff(mainScreen, COLOR_PAIR(20));
 
-        wrefresh(game);
+        wrefresh(mainScreen);
         inputDebugMessage("x: %d y: %d", px, py);
     }
 
