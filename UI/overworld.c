@@ -1,6 +1,10 @@
 #include <stdlib.h>
 #include <time.h>
-#include <ncurses.h>
+#ifdef __unix__
+    #include <ncurses.h>
+#else
+    #include <curses.h>
+#endif
 #include <unistd.h>
 #include "battleUI.c"
 

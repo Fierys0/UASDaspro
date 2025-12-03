@@ -288,39 +288,35 @@ void clearMainScreen()
 
 int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index), bool isExtraKey)
 {
-
     keypad(win, TRUE);
     int highlight = 0;
     int arraySize = 0;
-    while (strChoices[arraySize] != NULL)
-        arraySize++;
+    while (strChoices[arraySize] != NULL) arraySize++;
 
-    if (onHighlight)
-        onHighlight(highlight);
+    if (onHighlight) onHighlight(highlight);
 
-    if (shopForceHighlight >= 0)
-    {
-      highlight = shopForceHighlight;
-      shopForceHighlight = -1;
+    if (shopForceHighlight >= 0) {
+        highlight = shopForceHighlight;
+        shopForceHighlight = -1;
     }
 
     while (1)
     {
-        flushinp();
+        /* draw */
         for (int i = 0; i < arraySize; i++)
         {
-            if (i == highlight)
-            wattron(win, A_REVERSE);
+            if (i == highlight) wattron(win, A_REVERSE);
             mvwprintw(win, i + starty, startx, "%s", strChoices[i]);
-            wattroff(win, A_REVERSE);
-        } wrefresh(win);
+            if (i == highlight) wattroff(win, A_REVERSE);
+        }
+        wrefresh(win);
 
         if (isTutorial)
         {
             drawTutorial();
             isTutorial = false;
             drawMainScreen();
-        } 
+        }
 
         int oldHighlight = highlight;
         int usrInput = wgetch(win);
@@ -328,38 +324,39 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, voi
         switch (usrInput)
         {
             case KEY_UP:
-                highlight--;
-                if (highlight < 0) highlight = arraySize - 1;
+                highlight = (highlight - 1 + arraySize) % arraySize;
                 break;
             case KEY_DOWN:
-                highlight++;
-                if (highlight >= arraySize) highlight = 0;
+                highlight = (highlight + 1) % arraySize;
                 break;
-            case 10: // Enter
-                flushinp();
-                debugMenuInput(usrInput);
+            case '\n': case '\r': case KEY_ENTER:
+                /* Enter pressed */
+                debugMenuInput( (usrInput==KEY_ENTER) ? KEY_ENTER : '\n' );
                 return highlight;
-            case 27: // ESC
+            case 27: /* ESC */
                 lastKeypad = commandHud;
-                int exitChoices = exitMenu();
-                flushinp();
-                if (exitChoices == 1) {endwin(); exit(0);}
+                {
+                    int exitChoices = exitMenu();
+                    if (exitChoices == 1) {
+                        endwin();
+                        exit(0);
+                    }
+                }
                 break;
             case 47:
                 if (isExtraKey)
-                  return usrInput;
-                else
-                  break;
+                    return usrInput;
+                break;
             default:
+                /* other keys ignored */
                 break;
         }
 
-        flushinp();
+        /* debug and highlight callback only when changed or key pressed */
         inputDebugMessage("hl: %d (%s)", highlight, strChoices[highlight]);
         debugMenuInput(usrInput);
-        if (highlight != oldHighlight && onHighlight)
-            onHighlight(highlight);
-        wrefresh(win);
+
+        if (highlight != oldHighlight && onHighlight) onHighlight(highlight);
     }
 }
 
@@ -500,7 +497,7 @@ void handle_resize(int sig)
     endwin();
     refresh();
     clear();
-    #ifndef __unix__ 
+    #ifdef __unix__ 
       resizeterm(LINES, COLS);
     #endif
     draw_all();
@@ -509,12 +506,10 @@ void handle_resize(int sig)
 
 int mainUI()
 {
-    set_escdelay(25);
     noecho();
     curs_set(0);
     keypad(stdscr, TRUE);
     refresh();
-    raw();
     start_color();
 
     init_pair(1, COLOR_WHITE, COLOR_BLUE);
@@ -524,6 +519,7 @@ int mainUI()
     init_pair(5, COLOR_WHITE, COLOR_BLACK);
     #ifdef __unix__
       signal(SIGWINCH, handle_resize);
+      set_escdelay(25);
     #endif
     draw_all();
     draw_all();

@@ -2,7 +2,12 @@
 #include "UI/UI.c"
 #include "UI/titleScreenUI.c"
 #include <locale.h>
-#include <ncurses.h>
+#ifdef __unix__
+  #include <ncurses.h>
+#else
+  #include <curses.h>
+  #include <windows.h>
+#endif
 
 int main()
 {

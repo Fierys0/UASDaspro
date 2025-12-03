@@ -19,7 +19,6 @@ int titleInput(char* strChoices[], WINDOW *win)
 
     while (1)
     {
-        flushinp();
         for (int i = 0; i < arraySize; i++)
         {
             if (i == highlight)
@@ -41,13 +40,11 @@ int titleInput(char* strChoices[], WINDOW *win)
                 if (highlight >= arraySize) highlight = 0;
                 break;
             case 10: // Enter
-                flushinp();
                 return highlight;
             default:
                 break;
         }
 
-        flushinp();
         wrefresh(win);
     }
 }
@@ -63,6 +60,18 @@ void inputPlayerName()
 
 void titleScreen()
 {
+  int min_rows = 39;    // Minimum required rows
+  int min_cols = 111;    // Minimum required columns
+
+  int rows, cols;
+  getmaxyx(stdscr, rows, cols); // Get current terminal size
+
+  if (rows < min_rows || cols < min_cols) {
+      endwin(); // End ncurses mode before printing normally
+      printf("Terminal is too small! Minimum required: %dx%d. Current: %dx%d\n",
+             min_cols, min_rows, cols, rows);
+      exit(0);
+  }
   noecho();
   curs_set(0);
   titleScreenUI = newwin(39, 102, 0, 0);

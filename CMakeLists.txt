@@ -3,51 +3,38 @@ project(ather_project C)
 
 set(CMAKE_C_STANDARD 99)
 
-if(WIN32)
-    message(STATUS "Windows detected — using PDCurses wide version")
+if (WIN32)
+    message(STATUS "Building with PDCurses (wide mode)")
 
-    # Path to the pdcurses directory INSIDE your repo
     set(PDCURSES_DIR "${CMAKE_SOURCE_DIR}/pdcurses")
+    set(PDC_WINCON "${PDCURSES_DIR}/wincon")
 
-    # Check if library already compiled
-    if (NOT EXISTS "${PDCURSES_DIR}/wincon/pdcurses.a")
-        message(STATUS "PDCurses not built — building automatically")
+    # Expected output library from MinGW build
+    set(PDC_LIB "${PDC_WINCON}/pdcurses.a")
 
-        # Build PDCurses (WIDE VERSION)
-        # We use CMake's built-in build invocation
+    # Build only if missing
+    if (NOT EXISTS "${PDC_LIB}")
+        message(STATUS "PDCurses library not found — building...")
+
         execute_process(
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${PDCURSES_DIR}/build"
-        )
-        execute_process(
-            COMMAND ${CMAKE_COMMAND} -G "MinGW Makefiles" -DWIDE=Y ..
-            WORKING_DIRECTORY "${PDCURSES_DIR}/build"
-        )
-        execute_process(
-            COMMAND ${CMAKE_COMMAND} --build . --config Release
-            WORKING_DIRECTORY "${PDCURSES_DIR}/build"
+            COMMAND mingw32-make -f Makefile WIDE=Y UTF8=Y
+            WORKING_DIRECTORY ${PDC_WINCON}
         )
     endif()
 
-    # Tell CMake to link with the newly built library
     include_directories(${PDCURSES_DIR})
-    link_directories(${PDCURSES_DIR}/wincon)
+    include_directories(${PDC_WINCON})
+    link_directories(${PDC_WINCON})
 
-    set(CURSES_LIBRARIES pdcurses)
-    message(STATUS "Using PDCurses library: ${CURSES_LIBRARIES}")
+    set(CURSES_LIBRARIES ${PDC_LIB})
+    message(STATUS "Using PDCurses: ${CURSES_LIBRARIES}")
 
 else()
-    message(STATUS "UNIX system detected — using ncurses")
-
     find_package(Curses REQUIRED)
     include_directories(${CURSES_INCLUDE_DIR})
     set(CURSES_LIBRARIES ${CURSES_LIBRARIES})
 endif()
 
-file(GLOB SRC_FILES
-    "*.c"
-)
-
+file(GLOB SRC_FILES "*.c")
 add_executable(ather ${SRC_FILES})
-
 target_link_libraries(ather ${CURSES_LIBRARIES})
-
