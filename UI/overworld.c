@@ -45,7 +45,6 @@ void drawTile(WINDOW *win, int y, int x, char tile)
 void onGrassEvent(WINDOW *game, char **map)
 {
     inputDebugMessage("Player on grass");
-    keypad(game, FALSE);
     srand(time(NULL));
     int randomEncounter = rand() % 4;
     inputDebugMessage("randEn: %d", randomEncounter);
