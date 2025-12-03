@@ -6,6 +6,9 @@ Ather is a terminal-based RPG exploration and battle system written in C, using 
 ![repo-size](https://img.shields.io/github/repo-size/Fierys0/UASDaspro)
 ![license](https://img.shields.io/github/license/Fierys0/UASDaspro)
 
+## DISCLAMER
+This program is made for unix system only, if you are using windows expect visual bug!
+
 ## Features
 - Overworld movement system with tile-based terrain.
 - Grass encounter events with battle transitions.
