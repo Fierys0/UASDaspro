@@ -9,13 +9,16 @@
   #include <windows.h>
 #endif
 
-int main()
+bool isSecret = false;
+
+int main(int argc, char *argv[])
 {
+  if (argc > 1 && strcmp(argv[1], "debug") == 0) isSecret = true;
   setlocale(LC_ALL, "");
   initscr();
   initPlayer();
   initEnemies();
   titleScreen();
-  mainUI();
+  mainUI(isSecret);
   return 0;
 }

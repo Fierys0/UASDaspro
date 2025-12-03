@@ -191,6 +191,7 @@ char* userInput(WINDOW *win, const char *question)
     return buffer;
 }
 
+// menunjukan cheat menu
 void debugCheatMenu()
 {
   debugCheat = newwin(5, 22, 0, 0);
@@ -213,6 +214,7 @@ void debugCheatMenu()
   draw_all();
 }
 
+// fungsi untuk mengeprint di bagian window degug messages
 void inputDebugMessage(const char *messageString, ...)
 {
     if (!isDebug || !debugMessageHud) return;
@@ -239,6 +241,7 @@ void inputDebugMessage(const char *messageString, ...)
     wrefresh(debugMessageHud);
 }
 
+// center box function
 void center_box(WINDOW *parent, WINDOW *child, int y_offset, int styley, int stylex)
 {
     int parent_h, parent_w;
@@ -286,6 +289,7 @@ void clearMainScreen()
   wrefresh(mainScreen);
 }
 
+// fungsi untuk opsi pilihan dengan menggunakan arrow key
 int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, void (*onHighlight)(int index), bool isExtraKey)
 {
     keypad(win, TRUE);
@@ -382,7 +386,9 @@ void drawMainScreen()
 {
     mainScreen = newwin(31, 70, 0, 31);
     box(mainScreen, 0, 0);
-    mvwprintw(mainScreen, 1, 0, "%s", backgroundA);
+    int lines = sizeof(backgroundA) / sizeof(backgroundA[0]);
+    for (int i = 1; i < lines; i++) 
+      mvwprintw(mainScreen, i, 0, "%s", backgroundA[i]);
     wrefresh(mainScreen);
 }
 
@@ -416,6 +422,7 @@ void draw_all()
     debugMenu();
 }
 
+// Menggambar wwindow untuk keluar program
 int exitMenu()
 {
     keypad(lastKeypad, FALSE);
@@ -504,8 +511,9 @@ void handle_resize(int sig)
     debugMenu();
 }
 
-int mainUI()
+int mainUI(bool isDebugArg)
 {
+    isDebug = isDebugArg;
     noecho();
     curs_set(0);
     keypad(stdscr, TRUE);
@@ -563,6 +571,7 @@ int mainUI()
             break;
           case 4:
             loadPlayer(&player);
+            levelUP = (int)((float)(baseEXPUP * player.level * 1.50));
             break;
         }
         if (choice == -1) break;

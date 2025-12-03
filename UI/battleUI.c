@@ -32,6 +32,7 @@ extern void battleEnd(struct Player* player, struct entityData* enemy);
 extern void mainMenu(struct Player player);
 extern void gameOver();
 extern void reverseBox(WINDOW *win, int reverseOn);
+extern void clearMainScreen();
 
 int mainboxLimit = 1;
 
@@ -122,7 +123,10 @@ void drawEnemySprite(struct entityData enemy)
 
 void battleStart()
 {
-    mvwprintw(mainScreen, 1, 0, "%s", battleBG);
+    clearMainScreen();
+    int lines = sizeof(battleBG) / sizeof(battleBG[0]);
+    for (int i = 1; i < lines; i++) 
+      mvwprintw(mainScreen, i, 0, "%s", battleBG[i]);
     wrefresh(mainScreen);
 
     struct entityData enemy;
@@ -132,7 +136,7 @@ void battleStart()
     drawHealthUI(enemy);
 
     clearCommandHud();
-    char *battleChoices[] = {"Attack", "Defend", "Skill", "Item", "Run", NULL};
+    char *battleChoices[] = {"Attack", "Defend", "Skill", "Run", NULL};
     while (player.health > 0 && enemy.health > 0)
     {
       int choices = usrInputChoices(battleChoices, commandHud, 1, 1, NULL, false);
@@ -144,7 +148,13 @@ void battleStart()
         battleDefend(&player, &enemy);
       } else if (choices == 2){
         skillUI(&player, &enemy);
-      } else if (choices == 4) break;
+      } else if (choices == 3) {
+        werase(enemySprite);
+        werase(enemyHealthHud);
+        delwin(enemySprite);
+        delwin(enemyHealthHud);
+        break;
+      }
       drawHealthUI(enemy);
       drawPlayerHud();
     }

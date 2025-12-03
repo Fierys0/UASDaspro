@@ -48,13 +48,15 @@ void onGrassEvent(WINDOW *game, char **map)
     keypad(game, FALSE);
     srand(time(NULL));
     int randomEncounter = rand() % 4;
+    inputDebugMessage("randEn: %d", randomEncounter);
 
     if (randomEncounter == 1)
     {
         clearTextHud();
         matrixAnimationNcurses(textHud, 1, 10, 10, "Sesuatu mendekat!");
-        usleep(1500000);
+        napms(150);
         battleStart();
+        clearMainScreen();
     }
 
     // redraw map

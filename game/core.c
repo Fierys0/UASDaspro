@@ -64,48 +64,7 @@ void mainMenu(struct Player player);
 void gameOver();
 extern void draw_all();
 
-void matrixAnimation(const char* stringData, unsigned int characterDelay, unsigned int textDelay) 
-{
-    srand(time(NULL));
-    char output[1024] = "";
-    int len = strlen(stringData);
-    int out_len = 0;
-
-    for (int i = 0; i < len; i++) {
-        char realChar = stringData[i];
-        for (int j = 0; j < 15; j++) {
-            char randChar = (char)((rand() % 94) + 33);
-            printf("\r%s%c", output, randChar);
-            fflush(stdout);
-            usleep(characterDelay);
-        }
-
-        output[out_len++] = realChar;
-        output[out_len] = '\0';
-        printf("\r%s", output);
-        fflush(stdout);
-        usleep(textDelay);
-    }
-    printf("\n");
-}
-
-void drawHealth(int health, int maxHealth) 
-{
-    const char healthSymbol[] = "#";
-    const char healthEmptySymbol[] = "-";
-    float healthPercent = (float)health / maxHealth;
-    int filledBars = (int)(healthPercent * 10);
-
-    printf("[");
-    for (int i = 0; i < 10; i++) {
-        if (i < filledBars)
-            printf("%c", healthSymbol);
-        else
-            printf("%c", healthEmptySymbol);
-    }
-    printf("%s]", AC_NORMAL);
-}
-
+// menggambar bar [###########]
 char* drawBar(int health, int maxHealth)
 {
     inputDebugMessage("Drawing bar (%d)(%d)", health, maxHealth);
@@ -135,22 +94,7 @@ char* drawBar(int health, int maxHealth)
     return result;
 }
 
-void battleUI(struct Player player, struct entityData enemy) 
-{
-    for (int i = 0; i < borderWidth; i++) printf("=");
-    printf("\n");
-
-    printf("%s%s%s HP: %d/%d\n", AC_RED, enemy.name, AC_NORMAL, enemy.health, enemy.maxHealth);
-    drawHealth(enemy.health, enemy.maxHealth);
-
-    printf("\n\n%s%s%s HP: %d/%d\n", AC_CYAN, player.name, AC_NORMAL, player.health, player.maxHealth);
-    drawHealth(player.health, player.maxHealth);
-
-    printf("\n");
-    for (int i = 0; i < borderWidth; i++) printf("=");
-    printf("\n");
-}
-
+// fungsi musuh menyerang
 bool enemyAttackFunc(struct Player* player, struct entityData* enemy)
 {
     int playerDamage = player->baseDamage + player->weapon.damage;
@@ -208,6 +152,7 @@ bool enemyAttackFunc(struct Player* player, struct entityData* enemy)
     return false;
 }
 
+// Fungsi player menyerang
 bool playerAttackFunc(struct Player* player, struct entityData* enemy)
 {
     int playerDamage = player->baseDamage * player->level + player->weapon.damage;
@@ -274,7 +219,7 @@ bool playerAttackFunc(struct Player* player, struct entityData* enemy)
     return false;
 }
 
-
+// Fungsi skill dengan damage yang sudah ditentukan
 bool playerAttackSkill(struct Player* player, struct entityData* enemy, int skillDamage)
 {
     int playerDamage = skillDamage;
@@ -309,6 +254,7 @@ bool playerAttackSkill(struct Player* player, struct entityData* enemy, int skil
     return false;
 }
 
+// Fungsi fork untuk battle
 void battleAttack(struct Player* player, struct entityData* enemy) 
 {
     srand(time(NULL));  
@@ -323,6 +269,7 @@ void battleAttack(struct Player* player, struct entityData* enemy)
     }
 }
 
+// does this even work
 void addStatus(struct entityData *enemy, int Status)
 {
     for (int i=0; i <= 3; i++)
@@ -334,6 +281,7 @@ void addStatus(struct entityData *enemy, int Status)
     }
 }
 
+// tidur zzzz
 void playerRest(struct Player *player)
 {
   char *playerName = player->name;
@@ -349,6 +297,7 @@ void playerRest(struct Player *player)
   napms(300);
 }
 
+// Fungsi menangkis dengan cara mengurangi damage
 void battleDefend(struct Player *player, struct entityData *enemy)
 {
     int playerDefense = player->defensePoint + player->armor.baseDefense;
@@ -389,10 +338,12 @@ int skillChargeAttack(struct Player* player, struct entityData* enemy, int baseD
   }
 }
 
+// Fungsi ketika battle selesai
 void battleEnd(struct Player* player, struct entityData* enemy) 
 {
     srand(time(NULL));
 
+    // Menghitung exp dan uang
     int expGain = enemy->baseExpDrop + rand() % enemy->baseExpDrop;
     int moneyGain = enemy->baseMoneyDrop + rand() % enemy->baseMoneyDrop;
 
@@ -423,70 +374,6 @@ struct entityData randomBattle()
     int randomIndex = rand() % 2;
 
     return enemies[randomIndex];
-}
-
-struct Player startBattle(struct Player player, struct entityData enemy) {
-    if (enemy.name == NULL) 
-    {
-        enemy = randomBattle();
-    }
-
-    while (player.health > 0 && enemy.health > 0) 
-    {
-        battleUI(player, enemy);
-
-        printf("\n(A)ttack or (D)efend: ");
-        char choice;
-        scanf(" %c", &choice);
-
-        switch (choice) {
-            case 'A':
-            case 'a':
-                battleAttack(&player, &enemy);
-                break;
-            case 'D':
-            case 'd':
-                battleDefend(&player, &enemy);
-                break;
-            default:
-                printf("Invalid choice!\n");
-        }
-        sleep(1);
-    }
-
-    if (player.health > 0)
-    {
-        battleEnd(&player, &enemy);
-    } else
-    {
-        gameOver();
-    }
-
-    return player ;
-}
-
-void mainMenu(struct Player player) {
-    while (1) {
-        int pilihan;
-
-        printf("==== MAIN MENU ====\n");
-        printf("1. Random Battle\n2. Exit\n");
-        printf("Choose: ");
-        scanf("%d", &pilihan);
-
-        switch (pilihan) {
-            case 1: {
-                struct entityData enemy = randomBattle();
-                player = startBattle(player, enemy);
-                break;
-            }
-            case 2:
-                return;
-            default:
-                printf("Invalid input!\n");
-                break;
-        }
-    }
 }
 
 void gameOver() {

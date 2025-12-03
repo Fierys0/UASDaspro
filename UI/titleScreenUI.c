@@ -54,8 +54,12 @@ void inputPlayerName()
   clear();
   refresh();
   nameInput = newwin(5, 30, 0, 0);
-  char *result = userInput(nameInput, "Siapa namamu?");
-  strcpy(player.name, result);
+  char *result;
+  result = userInput(nameInput, "Siapa namamu?");
+  if (result[0] == '\0')
+    strcpy(player.name, "Hero");
+  else 
+    strcpy(player.name, result);
 }
 
 void titleScreen()
@@ -70,6 +74,9 @@ void titleScreen()
       endwin(); // End ncurses mode before printing normally
       printf("Terminal is too small! Minimum required: %dx%d. Current: %dx%d\n",
              min_cols, min_rows, cols, rows);
+      #ifdef _WIN32
+        system("pause");
+      #endif
       exit(0);
   }
   noecho();
