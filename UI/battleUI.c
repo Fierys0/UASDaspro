@@ -124,13 +124,14 @@ void drawEnemySprite(struct entityData enemy)
 void battleStart()
 {
     clearMainScreen();
+    struct entityData enemy;
+    enemy = randomBattle();
+
+    flushinp();
     int lines = sizeof(battleBG) / sizeof(battleBG[0]);
     for (int i = 1; i < lines; i++) 
       mvwprintw(mainScreen, i, 0, "%s", battleBG[i]);
     wrefresh(mainScreen);
-
-    struct entityData enemy;
-    enemy = randomBattle();
 
     drawEnemySprite(enemy);
     drawHealthUI(enemy);
