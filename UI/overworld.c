@@ -161,19 +161,44 @@ int overworldStart()
     int ch;
     while (1)
     {
-        ch = wgetch(mainScreen);
-
-        // restore tile under player
-        drawTile(py, px, map[py - 1][px - 1]);
-
-        debugMenuInput(ch);
-
-        switch (ch)
+        //memastikan jika input selain arrow key tidak akan terupdate
+        while (1)
         {
-        case KEY_UP:    if (py > 1) py--; break;
-        case KEY_DOWN:  if (py < boxHeight - 2) py++; break;
-        case KEY_LEFT:  if (px > 1) px--; break;
-        case KEY_RIGHT: if (px < boxWidth - 2) px++; break;
+          // draw player
+          wattron(mainScreen, COLOR_PAIR(20));
+          mvwaddch(mainScreen, py, px, '@');
+          wattroff(mainScreen, COLOR_PAIR(20));
+          wrefresh(mainScreen);
+          keypad(mainScreen, TRUE);
+          flushinp();
+          ch = wgetch(mainScreen);
+
+          // restore tile under player
+          drawTile(py, px, map[py - 1][px - 1]);
+
+          debugMenuInput(ch);
+
+          if (ch == KEY_UP)
+          {
+            if (py > 1) py--;
+            break;
+          }
+          else if (ch == KEY_DOWN)
+          {
+            if (py < boxHeight - 2) py++; 
+            break;
+          }
+          else if (ch == KEY_LEFT)
+          {
+            if (px > 1) px--; 
+            break;
+          }
+          else if (ch == KEY_RIGHT)
+          {
+            if (px < boxWidth - 2) px++;
+            break;
+          }
+          
         }
 
         // exit
@@ -185,6 +210,12 @@ int overworldStart()
             break;
         }
 
+        // draw player
+        wattron(mainScreen, COLOR_PAIR(20));
+        mvwaddch(mainScreen, py, px, '@');
+        wattroff(mainScreen, COLOR_PAIR(20));
+        wrefresh(mainScreen);
+
         // grass event
         if (map[py - 1][px - 1] == 'W')
             onGrassEvent(map);
@@ -193,7 +224,7 @@ int overworldStart()
         wattron(mainScreen, COLOR_PAIR(20));
         mvwaddch(mainScreen, py, px, '@');
         wattroff(mainScreen, COLOR_PAIR(20));
-
+        wrefresh(mainScreen);
         wrefresh(mainScreen);
         inputDebugMessage("x: %d y: %d", px, py);
     }

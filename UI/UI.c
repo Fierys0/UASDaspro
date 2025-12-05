@@ -97,6 +97,7 @@ void debugMenuInput(int usrInput)
 {
     if (!isDebug || !debugHud) return;
 
+    // clear line
     mvwprintw(debugHud, debugPosition, 1, "                  ");
     switch (usrInput)
     {
