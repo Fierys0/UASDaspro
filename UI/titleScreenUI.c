@@ -71,14 +71,15 @@ void titleScreen()
   getmaxyx(stdscr, rows, cols); // Get current terminal size
 
   if (rows < min_rows || cols < min_cols) {
-      endwin(); // End ncurses mode before printing normally
-      printf("Terminal is too small! Minimum required: %dx%d. Current: %dx%d\n",
-             min_cols, min_rows, cols, rows);
-      #ifdef _WIN32
-        system("pause");
-      #endif
-      exit(0);
+    endwin(); // End ncurses
+    printf("Terminal is too small! Minimum required: %dx%d. Current: %dx%d\n",
+            min_cols, min_rows, cols, rows);
+    #ifdef _WIN32
+      system("pause");
+    #endif
+    exit(0);
   }
+
   noecho();
   curs_set(0);
   titleScreenUI = newwin(39, 102, 0, 0);

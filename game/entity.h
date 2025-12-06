@@ -34,6 +34,7 @@ struct entityData {
     float expMultiplier;
     int statusEffect[4];
     const char* enemySprite;
+    short color[3];
 };
 
 struct Player {

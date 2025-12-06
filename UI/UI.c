@@ -324,14 +324,23 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, voi
 
         int oldHighlight = highlight;
         int usrInput = wgetch(win);
+        int next;
 
         switch (usrInput)
         {
             case KEY_UP:
-                highlight = (highlight - 1 + arraySize) % arraySize;
+                next = (highlight - 1 + arraySize) % arraySize;
+                // Skip spacer ("")
+                while (strcmp(strChoices[next], "") == 0)
+                  next = (next - 1 + arraySize) % arraySize;
+                highlight = next;
                 break;
             case KEY_DOWN:
-                highlight = (highlight + 1) % arraySize;
+                next = (highlight + 1) % arraySize;
+                // Skip spacer ("")
+                while (strcmp(strChoices[next], "") == 0)
+                  next = (next + 1) % arraySize;
+                highlight = next;
                 break;
             case 10:
                 /* Enter pressed */
@@ -343,7 +352,6 @@ int usrInputChoices(char *strChoices[], WINDOW *win, int starty, int startx, voi
                     int exitChoices = exitMenu();
                     if (exitChoices == 1) {
                         endwin();
-                        printf("Exited throught exithud");
                         exit(0);
                     }
                 }
@@ -387,8 +395,8 @@ void drawMainScreen()
     mainScreen = newwin(31, 70, 0, 31);
     box(mainScreen, 0, 0);
     int lines = sizeof(backgroundA) / sizeof(backgroundA[0]);
-    for (int i = 1; i < lines; i++) 
-      mvwprintw(mainScreen, i, 0, "%s", backgroundA[i]);
+    for (int i = 0; i < lines; i++) 
+      mvwprintw(mainScreen, i + 1, 0, "%s", backgroundA[i]);
     wrefresh(mainScreen);
 }
 
@@ -499,7 +507,6 @@ int exitMenu()
 void handle_resize(int sig)
 {
     endwin();
-    printf("handle_resize");
     refresh();
     clear();
     #ifdef __unix__ 
@@ -576,6 +583,5 @@ int mainUI(bool isDebugArg)
     }
 
     endwin();
-    printf("exit program?");
     return 0;
 }

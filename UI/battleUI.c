@@ -88,7 +88,7 @@ void drawHealthUI(struct entityData enemy)
     enemyHealthHud = newwin(5, 31, 0, 0);
     center_box(mainScreen, enemyHealthHud, 8, 0, 0);
     mvwprintw(enemyHealthHud, 1, 1, "%s (LV %d)", enemy.name, enemy.level);
-    mvwprintw(enemyHealthHud, 2, 1, "%d/%d", enemy.health, enemy.maxHealth);
+    mvwprintw(enemyHealthHud, 2, 1, "%d/%d HP", enemy.health, enemy.maxHealth);
     mvwprintw(enemyHealthHud, 3, 1, "%s", enemyHealthBar);
     wrefresh(enemyHealthHud);
 }
@@ -116,7 +116,10 @@ void drawEnemySprite(struct entityData enemy)
 {
     enemySprite = newwin(14, 31, 0, 0);
     center_box(mainScreen, enemySprite, 12, 0, 0);
+    init_pair(enemy.color[0], enemy.color[1], enemy.color[2]);
+    wattron(enemySprite, COLOR_PAIR(enemy.color[0]));
     mvwaddstr(enemySprite, 1, 0, enemy.enemySprite);
+    wattroff(enemySprite, COLOR_PAIR(enemy.color[0]));
     wrefresh(enemySprite);
 }
 
@@ -128,8 +131,8 @@ void battleStart()
 
     flushinp();
     int lines = sizeof(battleBG) / sizeof(battleBG[0]);
-    for (int i = 1; i < lines; i++) 
-      mvwprintw(mainScreen, i, 0, "%s", battleBG[i]);
+    for (int i = 0; i < lines; i++) 
+      mvwprintw(mainScreen, i + 1, 0, "%s", battleBG[i]);
     wrefresh(mainScreen);
 
     drawEnemySprite(enemy);

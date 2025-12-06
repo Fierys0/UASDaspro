@@ -1,4 +1,9 @@
 #include "entity.h"
+#ifdef __unix__
+  #include <ncurses.h>
+#else
+  #include <curses.h>
+#endif
 
 struct entityData enemies[3];  // Declare but don’t initialize weapons yet
 extern const char* goblinSprite;
@@ -11,7 +16,8 @@ void initEnemies(void) {
         1, 1, 4, 20, 50,
         1.0f, 1.0f,
         {0,0,0,0},
-        slimeSprite
+        slimeSprite,
+        {100, COLOR_BLUE, COLOR_BLACK}
     };
 
     enemies[1] = (struct entityData){
@@ -20,7 +26,8 @@ void initEnemies(void) {
         2, 3, 10, 24, 100,
         1.2f, 1.2f,
         {0,0,0,0},
-        goblinSprite
+        goblinSprite,
+        {101, COLOR_GREEN, COLOR_BLACK}
     };
 }
 
