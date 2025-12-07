@@ -25,15 +25,17 @@ This program is made for unix system in mind, if you are using windows expect bu
 
 Install ncurses:
 
+APT:
 ```
 sudo apt-get install libncurses5-dev libncursesw5-dev
 ```
-Arch:
+
+Pacman:
 ```
 sudo pacman -S ncurses
 ```
 
-or
+MacOs (using brew):
 ```
 brew install ncurses
 ```
