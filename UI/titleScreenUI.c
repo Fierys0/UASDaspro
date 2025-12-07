@@ -64,8 +64,8 @@ void inputPlayerName()
 
 void titleScreen()
 {
-  int min_rows = 39;    // Minimum required rows
-  int min_cols = 111;    // Minimum required columns
+  int min_rows = 37;    // Minimum required rows
+  int min_cols = 120;    // Minimum required columns
 
   int rows, cols;
   getmaxyx(stdscr, rows, cols); // Get current terminal size
@@ -82,7 +82,7 @@ void titleScreen()
 
   noecho();
   curs_set(0);
-  titleScreenUI = newwin(39, 102, 0, 0);
+  titleScreenUI = newwin(37, 130, 0, 0);
   box(titleScreenUI, 0, 0);
   titleUI = newwin(6, 41, 0, 0);
   center_box(titleScreenUI, titleUI, 12, 32, 32);
